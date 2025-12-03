@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import NavLink from "./NavLink";
+import { NavLink } from "./NavLink";
 import { Button } from "./ui/button";
 import { LogIn, User } from "lucide-react";
 
