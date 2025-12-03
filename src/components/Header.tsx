@@ -1,56 +1,65 @@
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Home, Gamepad2, BookOpen, Music, Gift, Image } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import NavLink from "./NavLink";
+import { Button } from "./ui/button";
+import { LogIn, User } from "lucide-react";
 
 const Header = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
-  const navItems = [
-    { path: "/", label: "Головна", icon: Home },
-    { path: "/games", label: "Ігри", icon: Gamepad2 },
-    { path: "/stories", label: "Історії", icon: BookOpen },
-    { path: "/music", label: "Музика", icon: Music },
-    { path: "/gifts", label: "Подарунки", icon: Gift },
-    { path: "/gallery", label: "Галерея", icon: Image },
-  ];
+  // Не показувати header на сторінках login/signup
+  if (location.pathname === "/login" || location.pathname === "/signup") {
+    return null;
+  }
 
   return (
-    <header className="fixed top-12 left-0 right-0 z-50 glass-card border-b border-border/50">
-      <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎄</span>
-            <span className="font-heading font-bold text-lg hidden sm:block text-gradient-gold">
-              IT Christmas
-            </span>
+    <header className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/10">
+      <nav className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link
+            to="/"
+            className="text-2xl font-bold bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent"
+          >
+            🎄 Різдвяний Challenge
           </Link>
 
-          {/* Navigation */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              const Icon = item.icon;
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 text-sm font-medium",
-                    isActive
-                      ? "bg-primary/20 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden md:inline">{item.label}</span>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex gap-6">
+              <NavLink to="/">Головна</NavLink>
+              <NavLink to="/games">Ігри</NavLink>
+              <NavLink to="/stories">Історії</NavLink>
+              <NavLink to="/music">Музика</NavLink>
+              <NavLink to="/gifts">Подарунки</NavLink>
+              <NavLink to="/gallery">Галерея</NavLink>
+            </div>
+
+            {/* Auth buttons */}
+            {user ? (
+              <Link to="/dashboard">
+                <Button variant="outline" className="border-christmas-gold text-christmas-gold hover:bg-christmas-gold/20">
+                  <User className="mr-2 h-4 w-4" />
+                  Мій кабінет
+                </Button>
+              </Link>
+            ) : (
+              <div className="flex gap-2">
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Вхід
+                  </Button>
                 </Link>
-              );
-            })}
+                <Link to="/signup">
+                  <Button size="sm" className="bg-gradient-to-r from-christmas-red to-christmas-gold">
+                    Реєстрація
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </header>
   );
 };
