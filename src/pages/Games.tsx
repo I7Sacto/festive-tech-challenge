@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
 import Header from "@/components/Header";
@@ -10,7 +11,7 @@ const games = [
   {
     gameNumber: 1,
     title: "Різдвяна вікторина",
-    description: "8 питань про IT: DevOps, мережі, програмування",
+    description: "30 питань про IT: DevOps, мережі, програмування",
     icon: "🎯",
     unlockCondition: "Розблоковано з початку",
     path: "/games/quiz",
@@ -57,18 +58,43 @@ const games = [
   },
 ];
 
-// Mock game progress (will be replaced with Supabase data)
-const mockProgress = {
-  1: { completed: true, score: 85 },
-  2: { completed: false, score: 0 },
-  3: { completed: false, score: 0 },
-  4: { completed: false, score: 0 },
-  5: { completed: false, score: 0 },
-  6: { completed: false, score: 0 },
+// Зберігання прогресу в localStorage
+const getGameProgress = () => {
+  const saved = localStorage.getItem('gameProgress');
+  if (saved) {
+    return JSON.parse(saved);
+  }
+  return {
+    1: { completed: false, score: 0, unlocked: true },
+    2: { completed: false, score: 0, unlocked: false },
+    3: { completed: false, score: 0, unlocked: false },
+    4: { completed: false, score: 0, unlocked: false },
+    5: { completed: false, score: 0, unlocked: false },
+    6: { completed: false, score: 0, unlocked: false },
+  };
 };
 
 const Games = () => {
   const navigate = useNavigate();
+  const [gameProgress, setGameProgress] = useState(getGameProgress());
+
+  // Оновлення прогресу при зміні localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setGameProgress(getGameProgress());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    // Також перевіряємо при mount
+    const interval = setInterval(() => {
+      setGameProgress(getGameProgress());
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleGameClick = (path: string, isLocked: boolean) => {
     if (isLocked) {
@@ -83,12 +109,10 @@ const Games = () => {
   };
 
   const isGameUnlocked = (gameNumber: number): boolean => {
-    if (gameNumber === 1) return true;
-    const prevGame = mockProgress[gameNumber - 1 as keyof typeof mockProgress];
-    return prevGame?.completed || false;
+    return gameProgress[gameNumber as keyof typeof gameProgress]?.unlocked || false;
   };
 
-  const completedGames = Object.values(mockProgress).filter(g => g.completed).length;
+  const completedGames = Object.values(gameProgress).filter(g => g.completed).length;
   const totalProgress = Math.round((completedGames / games.length) * 100);
 
   return (
@@ -98,38 +122,42 @@ const Games = () => {
       <Header />
 
       <main className="pt-36 pb-16 px-4 relative z-10">
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-6xl">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4">
-              <span className="text-gradient-gold">🎮 Різдвяні ігри</span>
+            <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent">
+              🎮 Різдвяні Ігри
             </h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
-              Проходьте ігри послідовно, щоб розблокувати нові рівні та отримати фінальний подарунок!
+            <p className="text-lg text-muted-foreground mb-6">
+              Пройдіть всі 6 ігор та отримайте фінальний сюрприз!
             </p>
-
-            {/* Overall Progress */}
-            <div className="max-w-md mx-auto glass-card rounded-xl p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-foreground font-medium">Загальний прогрес</span>
-                <span className="text-christmas-gold font-bold">{completedGames}/{games.length} ігор</span>
-              </div>
-              <ProgressBar progress={totalProgress} showLabel={false} />
+            
+            {/* Progress */}
+            <div className="max-w-md mx-auto">
+              <ProgressBar progress={totalProgress} />
+              <p className="text-sm text-muted-foreground mt-2">
+                Пройдено: {completedGames} з {games.length}
+              </p>
             </div>
           </div>
 
           {/* Games Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {games.map((game) => (
-              <GameCard
-                key={game.gameNumber}
-                {...game}
-                isLocked={!isGameUnlocked(game.gameNumber)}
-                isCompleted={mockProgress[game.gameNumber as keyof typeof mockProgress]?.completed || false}
-                score={mockProgress[game.gameNumber as keyof typeof mockProgress]?.score}
-                onClick={() => handleGameClick(game.path, !isGameUnlocked(game.gameNumber))}
-              />
-            ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {games.map((game) => {
+              const isUnlocked = isGameUnlocked(game.gameNumber);
+              const progress = gameProgress[game.gameNumber as keyof typeof gameProgress];
+              
+              return (
+                <GameCard
+                  key={game.gameNumber}
+                  {...game}
+                  isLocked={!isUnlocked}
+                  isCompleted={progress?.completed || false}
+                  score={progress?.score || 0}
+                  onClick={() => handleGameClick(game.path, !isUnlocked)}
+                />
+              );
+            })}
           </div>
         </div>
       </main>
