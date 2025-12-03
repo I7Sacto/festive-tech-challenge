@@ -13,7 +13,7 @@ const games = [
   {
     gameNumber: 1,
     title: "Різдвяна вікторина",
-    description: "8 питань про IT: DevOps, мережі, програмування",
+    description: "30 питань про IT: DevOps, мережі, програмування",
     icon: "🎯",
     unlockCondition: "Розблоковано з початку",
     path: "/games/quiz",
@@ -62,7 +62,7 @@ const games = [
 
 // Mock game progress (will be replaced with Supabase data)
 const mockProgress = {
-  1: { completed: true, score: 85 },
+  1: { completed: false, score: 0 },
   2: { completed: false, score: 0 },
   3: { completed: false, score: 0 },
   4: { completed: false, score: 0 },
