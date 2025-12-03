@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward } from "lucide-react";
+import { useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
@@ -9,97 +9,70 @@ import { cn } from "@/lib/utils";
 const playlist = [
   {
     id: 1,
-    title: "Jingle Bells (Lo-fi Remix)",
-    artist: "Chill Beats",
-    duration: "3:24",
+    title: "Jingle Bells",
+    artist: "Frank Sinatra",
     emoji: "🔔",
-    // Безкоштовна різдвяна музика з FreeMusicArchive
-    url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Kevin_MacLeod/Christmas/Kevin_MacLeod_-_Jingle_Bells.mp3"
+    youtubeId: "PI14ZghHUBY",
   },
   {
     id: 2,
-    title: "Silent Night (Piano Version)",
-    artist: "Christmas Classics",
-    duration: "4:12",
-    emoji: "🌙",
-    url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Seasonal/Scott_Holmes_-_02_-_Silent_Night.mp3"
+    title: "Last Christmas",
+    artist: "Wham!",
+    emoji: "🎄",
+    youtubeId: "E8gmARGvPlI",
   },
   {
     id: 3,
-    title: "We Wish You a Merry Christmas",
-    artist: "Holiday Orchestra",
-    duration: "2:58",
-    emoji: "🎄",
-    url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Kevin_MacLeod/Christmas/Kevin_MacLeod_-_We_Wish_You_a_Merry_Christmas.mp3"
+    title: "All I Want for Christmas Is You",
+    artist: "Mariah Carey",
+    emoji: "❤️",
+    youtubeId: "yXQViqx6GMY",
   },
   {
     id: 4,
+    title: "Silent Night",
+    artist: "Bing Crosby",
+    emoji: "🌙",
+    youtubeId: "mQ0Mm6T3BRQ",
+  },
+  {
+    id: 5,
+    title: "We Wish You a Merry Christmas",
+    artist: "Christmas Classics",
+    emoji: "🎅",
+    youtubeId: "g-OF7KGyDis",
+  },
+  {
+    id: 6,
     title: "Carol of the Bells",
-    artist: "Techno Christmas",
-    duration: "4:02",
+    artist: "Pentatonix",
     emoji: "🔔",
-    url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Kevin_MacLeod/Christmas/Kevin_MacLeod_-_Carol_of_the_Bells.mp3"
+    youtubeId: "WSUFzC6_fp8",
+  },
+  {
+    id: 7,
+    title: "Let It Snow",
+    artist: "Dean Martin",
+    emoji: "❄️",
+    youtubeId: "mN7LW0Y00kE",
+  },
+  {
+    id: 8,
+    title: "Winter Wonderland",
+    artist: "Michael Bublé",
+    emoji: "⛄",
+    youtubeId: "94Ye-3C1FC8",
   },
 ];
 
 const Music = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isMuted, setIsMuted] = useState(false);
 
-  // Синхронізація audio елемента з состоянием
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(err => console.log("Play error:", err));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.muted = isMuted;
-    }
-  }, [isMuted]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // Зміна треку
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-      if (isPlaying) {
-        audioRef.current.play().catch(err => console.log("Play error:", err));
-      }
-    }
-  }, [currentTrack]);
-
-  const togglePlay = () => setIsPlaying(!isPlaying);
   const toggleMute = () => setIsMuted(!isMuted);
-  
-  const nextTrack = () => {
-    setCurrentTrack((prev) => (prev + 1) % playlist.length);
-  };
-  
-  const prevTrack = () => {
-    setCurrentTrack((prev) => (prev - 1 + playlist.length) % playlist.length);
-  };
 
   const selectTrack = (index: number) => {
     setCurrentTrack(index);
-    setIsPlaying(true);
-  };
-
-  const handleTrackEnd = () => {
-    nextTrack();
   };
 
   const current = playlist[currentTrack];
@@ -110,122 +83,113 @@ const Music = () => {
       <Garland />
       <Header />
 
-      {/* HTML5 Audio Element */}
-      <audio
-        ref={audioRef}
-        onEnded={handleTrackEnd}
-        preload="metadata"
-      >
-        <source src={current.url} type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-
       <main className="pt-36 pb-16 px-4 relative z-10">
-        <div className="container mx-auto max-w-3xl">
+        <div className="container mx-auto max-w-5xl">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent">
               🎵 Музика та Атмосфера
             </h1>
             <p className="text-lg text-muted-foreground">
-              Насолоджуйтеся святковим плейлістом
+              Насолоджуйтеся справжніми різдвяними хітами
             </p>
           </div>
 
-          {/* Music Player */}
-          <div className="glass-card p-8 rounded-3xl mb-8">
-            {/* Current Track Info */}
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{current.emoji}</div>
-              <h2 className="text-2xl font-bold mb-2">{current.title}</h2>
-              <p className="text-muted-foreground">{current.artist}</p>
-            </div>
+          <div className="grid lg:grid-cols-[1fr,400px] gap-6">
+            {/* YouTube Player */}
+            <div className="glass-card p-6 rounded-3xl">
+              {/* Current Track Info */}
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4 animate-bounce">{current.emoji}</div>
+                <h2 className="text-2xl font-bold mb-2">{current.title}</h2>
+                <p className="text-muted-foreground">{current.artist}</p>
+              </div>
 
-            {/* Controls */}
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-12 w-12 rounded-full"
-                onClick={prevTrack}
-              >
-                <SkipBack className="h-5 w-5" />
-              </Button>
+              {/* YouTube Embed */}
+              <div className="aspect-video rounded-xl overflow-hidden bg-black/30 mb-4">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${current.youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0`}
+                  title={current.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              </div>
 
-              <Button
-                size="icon"
-                className="h-16 w-16 rounded-full bg-gradient-to-r from-christmas-red to-christmas-gold hover:scale-110 transition-transform"
-                onClick={togglePlay}
-              >
-                {isPlaying ? (
-                  <Pause className="h-8 w-8" />
-                ) : (
-                  <Play className="h-8 w-8 ml-1" />
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-12 w-12 rounded-full"
-                onClick={nextTrack}
-              >
-                <SkipForward className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Volume Control */}
-            <div className="flex items-center gap-4 justify-center mb-8">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMute}
-              >
-                {isMuted ? (
-                  <VolumeX className="h-5 w-5" />
-                ) : (
-                  <Volume2 className="h-5 w-5" />
-                )}
-              </Button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-32"
-              />
-            </div>
-          </div>
-
-          {/* Playlist */}
-          <div className="glass-card p-6 rounded-3xl">
-            <h3 className="text-xl font-bold mb-4">Плейлист</h3>
-            <div className="space-y-2">
-              {playlist.map((track, index) => (
-                <button
-                  key={track.id}
-                  onClick={() => selectTrack(index)}
-                  className={cn(
-                    "w-full p-4 rounded-xl text-left transition-all hover:bg-white/10",
-                    currentTrack === index && "bg-gradient-to-r from-christmas-red/20 to-christmas-gold/20 border-2 border-christmas-gold"
-                  )}
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleMute}
+                  className="h-12 w-12 rounded-full"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl">{track.emoji}</span>
-                    <div className="flex-1">
-                      <div className="font-semibold">{track.title}</div>
-                      <div className="text-sm text-muted-foreground">{track.artist}</div>
+                  {isMuted ? (
+                    <VolumeX className="h-5 w-5" />
+                  ) : (
+                    <Volume2 className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                💡 Використовуйте кнопки YouTube плеєра для повного контролю
+              </p>
+            </div>
+
+            {/* Playlist */}
+            <div className="glass-card p-6 rounded-3xl max-h-[600px] overflow-y-auto">
+              <h3 className="text-xl font-bold mb-4">🎼 Плейлист</h3>
+              <div className="space-y-2">
+                {playlist.map((track, index) => (
+                  <button
+                    key={track.id}
+                    onClick={() => selectTrack(index)}
+                    className={cn(
+                      "w-full p-4 rounded-xl text-left transition-all hover:bg-white/10 hover:scale-105",
+                      currentTrack === index &&
+                        "bg-gradient-to-r from-christmas-red/30 to-christmas-gold/30 border-2 border-christmas-gold scale-105"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{track.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm">{track.title}</div>
+                        <div className="text-xs text-muted-foreground">{track.artist}</div>
+                      </div>
+                      {currentTrack === index && (
+                        <div className="flex gap-1">
+                          <div className="w-1 h-4 bg-christmas-gold rounded-full animate-pulse"></div>
+                          <div className="w-1 h-4 bg-christmas-gold rounded-full animate-pulse delay-75"></div>
+                          <div className="w-1 h-4 bg-christmas-gold rounded-full animate-pulse delay-150"></div>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-muted-foreground">{track.duration}</div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 rounded-xl bg-christmas-gold/10 border border-christmas-gold/30">
+                <p className="text-xs text-center text-muted-foreground">
+                  🎵 {playlist.length} різдвяних хітів для святкового настрою!
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </main>
+
+      <style>{`
+        .delay-75 {
+          animation-delay: 75ms;
+        }
+        .delay-150 {
+          animation-delay: 150ms;
+        }
+      `}</style>
     </div>
   );
 };
