@@ -9,8 +9,15 @@ import Stories from "./pages/Stories";
 import Music from "./pages/Music";
 import Gifts from "./pages/Gifts";
 import Gallery from "./pages/Gallery";
-import Quiz from "./pages/games/Quiz";
 import NotFound from "./pages/NotFound";
+
+// Import all games
+import Quiz from "./pages/games/Quiz";
+import Crossword from "./pages/games/Crossword";
+import Puzzle from "./pages/games/Puzzle";
+import Coding from "./pages/games/Coding";
+import Networking from "./pages/games/Networking";
+import Surprise from "./pages/games/Surprise";
 
 const queryClient = new QueryClient();
 
@@ -21,14 +28,23 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Main pages */}
           <Route path="/" element={<Index />} />
           <Route path="/games" element={<Games />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/music" element={<Music />} />
           <Route path="/gifts" element={<Gifts />} />
           <Route path="/gallery" element={<Gallery />} />
+          
+          {/* Game routes */}
           <Route path="/games/quiz" element={<Quiz />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/games/crossword" element={<Crossword />} />
+          <Route path="/games/puzzle" element={<Puzzle />} />
+          <Route path="/games/coding" element={<Coding />} />
+          <Route path="/games/networking" element={<Networking />} />
+          <Route path="/games/surprise" element={<Surprise />} />
+          
+          {/* 404 page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
