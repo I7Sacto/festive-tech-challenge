@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, RefreshCw, Shuffle } from "lucide-react";
@@ -70,38 +71,47 @@ const Puzzle = () => {
     }
   };
 
-  const checkCompletion = (currentPieces: PuzzlePiece[]) => {
-    const isComplete = currentPieces.every((p) => p.currentPosition === p.correctPosition);
+  const checkCompletion = async (currentPieces: PuzzlePiece[]) => {
+  const isComplete = currentPieces.every((p) => p.currentPosition === p.correctPosition);
 
-    if (isComplete) {
-      setShowResults(true);
+  if (isComplete) {
+    setShowResults(true);
 
-      // Зберегти прогрес
-      const gameProgress = JSON.parse(localStorage.getItem("gameProgress") || "{}");
-      gameProgress[3] = {
-        completed: true,
-        score: 100,
-        unlocked: true,
-      };
+    // Зберегти в Supabase
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        await supabase
+          .from('game_progress')
+          .update({
+            completed: true,
+            score: 100,
+            completed_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('game_number', 3);
 
-      // Розблокувати наступну гру
-      gameProgress[4] = {
-        ...gameProgress[4],
-        unlocked: true,
-      };
+        // Розблокувати Гру 4
+        await supabase
+          .from('game_progress')
+          .update({ unlocked: true })
+          .eq('user_id', user.id)
+          .eq('game_number', 4);
 
-      localStorage.setItem("gameProgress", JSON.stringify(gameProgress));
-
-      toast({
-        title: "🎉 Вітаємо!",
-        description: `Пазл зібрано за ${moves + 1} ходів! Coding Challenge розблоковано!`,
-      });
+        toast({
+          title: "🎉 Вітаємо!",
+          description: `Пазл зібрано за ${moves + 1} ходів! Coding Challenge розблоковано!`,
+        });
+      }
+    } catch (error) {
+      console.error('Error saving progress:', error);
     }
-  };
+  }
+};
 
   const getPieceAtPosition = (position: number) => {
     return pieces.find((p) => p.currentPosition === position);
-  };
 
   if (showResults) {
     return (
