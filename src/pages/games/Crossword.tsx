@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Trophy, RefreshCw, HelpCircle, Keyboard } from "lucide-react";
@@ -180,52 +181,65 @@ const Crossword = () => {
     }
   };
 
-  const handleCheck = () => {
-    let correct = 0;
-    let total = 0;
+  const handleCheck = async () => {
+  let correct = 0;
+  let total = 0;
 
-    grid.forEach((row) => {
-      row.forEach((cell) => {
-        if (!cell.isBlack) {
-          total++;
-          if (cell.userLetter === cell.letter) {
-            correct++;
-          }
+  grid.forEach((row) => {
+    row.forEach((cell) => {
+      if (!cell.isBlack) {
+        total++;
+        if (cell.userLetter === cell.letter) {
+          correct++;
         }
-      });
+      }
     });
+  });
 
-    const percentage = Math.round((correct / total) * 100);
-    setScore(percentage);
-    setShowResults(true);
+  const percentage = Math.round((correct / total) * 100);
+  setScore(percentage);
+  setShowResults(true);
 
-    const gameProgress = JSON.parse(localStorage.getItem("gameProgress") || "{}");
-    gameProgress[2] = {
-      completed: true,
-      score: percentage,
-      unlocked: true,
-    };
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Оновити прогрес Гри 2
+      await supabase
+        .from('game_progress')
+        .update({
+          completed: true,
+          score: percentage,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 2);
 
-    if (percentage >= 80) {
-      gameProgress[3] = {
-        ...gameProgress[3],
-        unlocked: true,
-      };
+      // Розблокувати Гру 3 якщо score >= 80
+      if (percentage >= 80) {
+        await supabase
+          .from('game_progress')
+          .update({ unlocked: true })
+          .eq('user_id', user.id)
+          .eq('game_number', 3);
 
-      toast({
-        title: "🎉 Вітаємо!",
-        description: `Ви заповнили ${percentage}%! DevOps пазл розблоковано!`,
-      });
-    } else {
-      toast({
-        title: "😔 Майже!",
-        description: `Ви заповнили ${percentage}%. Потрібно мінімум 80%.`,
-        variant: "destructive",
-      });
+        toast({
+          title: "🎉 Вітаємо!",
+          description: `Ви заповнили ${percentage}%! DevOps пазл розблоковано!`,
+        });
+      } else {
+        toast({
+          title: "😔 Майже!",
+          description: `Ви заповнили ${percentage}%. Потрібно мінімум 80%.`,
+          variant: "destructive",
+        });
+      }
     }
-
-    localStorage.setItem("gameProgress", JSON.stringify(gameProgress));
-  };
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
 
   const handleRestart = () => {
     initializeGrid();
