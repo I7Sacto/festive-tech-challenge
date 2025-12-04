@@ -7,7 +7,12 @@ interface ProgressBarProps {
   animated?: boolean;
 }
 
-const ProgressBar = ({ progress, className, showLabel = true, animated = true }: ProgressBarProps) => {
+const ProgressBar = ({ 
+  progress, 
+  className, 
+  showLabel = true, 
+  animated = true 
+}: ProgressBarProps) => {
   return (
     <div className={cn("w-full", className)}>
       {showLabel && (
@@ -16,17 +21,17 @@ const ProgressBar = ({ progress, className, showLabel = true, animated = true }:
           <span className="text-sm font-bold text-christmas-gold">{progress}%</span>
         </div>
       )}
-      <div className="h-3 bg-secondary rounded-full overflow-hidden">
+      <div className="h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
         <div
           className={cn(
-            "h-full bg-gradient-gold rounded-full transition-all duration-1000",
-            animated && "progress-animated"
+            "h-full rounded-full bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green",
+            animated && "transition-all duration-1000 ease-out"
           )}
-          style={{ 
-            "--progress-width": `${progress}%`,
-            width: animated ? undefined : `${progress}%`
-          } as React.CSSProperties}
-        />
+          style={{ width: `${progress}%` }}
+        >
+          {/* Shimmer effect */}
+          <div className="w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+        </div>
       </div>
     </div>
   );
