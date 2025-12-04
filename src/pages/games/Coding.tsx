@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Trophy, RefreshCw, Check, X } from "lucide-react";
@@ -75,45 +76,40 @@ countGifts([{ name: "laptop", quantity: 2 }, { name: "mouse", quantity: 5 }])
       setTestResults(results);
       const allPassed = results.every((r) => r.passed);
       setAllTestsPassed(allPassed);
+if (allPassed) {
+  setShowResults(true);
 
-      if (allPassed) {
-        setShowResults(true);
-
-        // Зберегти прогрес
-        const gameProgress = JSON.parse(localStorage.getItem("gameProgress") || "{}");
-        gameProgress[4] = {
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      await supabase
+        .from('game_progress')
+        .update({
           completed: true,
           score: 100,
-          unlocked: true,
-        };
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 4);
 
-        // Розблокувати наступну гру
-        gameProgress[5] = {
-          ...gameProgress[5],
-          unlocked: true,
-        };
+      // Розблокувати Гру 5
+      await supabase
+        .from('game_progress')
+        .update({ unlocked: true })
+        .eq('user_id', user.id)
+        .eq('game_number', 5);
 
-        localStorage.setItem("gameProgress", JSON.stringify(gameProgress));
-
-        toast({
-          title: "🎉 Вітаємо!",
-          description: "Всі тести пройдені! Networking Quiz розблоковано!",
-        });
-      } else {
-        toast({
-          title: "❌ Тести не пройдені",
-          description: "Перевірте результати і спробуйте ще раз",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
       toast({
-        title: "❌ Помилка в коді",
-        description: `${error}`,
-        variant: "destructive",
+        title: "🎉 Вітаємо!",
+        description: "Всі тести пройдені! Networking Quiz розблоковано!",
       });
     }
-  };
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+}
 
   const handleReset = () => {
     setCode(`function countGifts(wishlist) {
