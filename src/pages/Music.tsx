@@ -12,7 +12,7 @@ const playlist = [
     title: "Jingle Bells",
     artist: "Frank Sinatra",
     emoji: "🔔",
-    youtubeId: "PI14ZghHUBY",
+    youtubeId: "Yf5R-z7JdBY",
   },
   {
     id: 2,
@@ -31,9 +31,9 @@ const playlist = [
   {
     id: 4,
     title: "Silent Night",
-    artist: "Bing Crosby",
+    artist: "Carrie Underwood",
     emoji: "🌙",
-    youtubeId: "mQ0Mm6T3BRQ",
+    youtubeId: "_vw--yxcDNM",
   },
   {
     id: 5,
@@ -52,9 +52,9 @@ const playlist = [
   {
     id: 7,
     title: "Let It Snow",
-    artist: "Dean Martin",
+    artist: "Frank Sinatra",
     emoji: "❄️",
-    youtubeId: "mN7LW0Y00kE",
+    youtubeId: "sE3uRRFVsmc",
   },
   {
     id: 8,
