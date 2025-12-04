@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, X, Trophy, RefreshCw } from "lucide-react";
