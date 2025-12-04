@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Gift, Download, Share2, Sparkles } from "lucide-react";
@@ -13,66 +14,88 @@ const Surprise = () => {
   const [isOpened, setIsOpened] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
 
-  const handleOpenGift = () => {
-    setIsOpened(true);
+  const handleOpenGift = async () => {
+  setIsOpened(true);
 
-    // Запустити конфеті
-    const duration = 5 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+  // Запустити конфеті (той самий код)
+  const duration = 5 * 1000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval: any = setInterval(function () {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
     }
 
-    const interval: any = setInterval(function () {
-      const timeLeft = animationEnd - Date.now();
+    const particleCount = 50 * (timeLeft / duration);
 
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+    });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+    });
+  }, 250);
+
+  setTimeout(() => {
+    setShowCertificate(true);
+  }, 2000);
+
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Оновити прогрес Гри 6
+      await supabase
+        .from('game_progress')
+        .update({
+          completed: true,
+          score: 100,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 6);
+
+      // Створити сертифікат
+      const { data: progressData } = await supabase
+        .from('game_progress')
+        .select('score, completed')
+        .eq('user_id', user.id);
+
+      if (progressData) {
+        const totalScore = progressData.reduce((sum, g) => sum + g.score, 0);
+        const gamesCompleted = progressData.filter(g => g.completed).length;
+
+        await supabase
+          .from('certificates')
+          .insert({
+            user_id: user.id,
+            certificate_type: 'Різдвяний ІТ Challenge 2024',
+            total_score: totalScore,
+            games_completed: gamesCompleted
+          });
       }
 
-      const particleCount = 50 * (timeLeft / duration);
-
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      toast({
+        title: "🎉 Вітаємо!",
+        description: "Ви пройшли всі 6 ігор! Сертифікат створено!",
       });
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-      });
-    }, 250);
-
-    // Показати сертифікат через 2 секунди
-    setTimeout(() => {
-      setShowCertificate(true);
-    }, 2000);
-
-    // Зберегти досягнення
-    const gameProgress = JSON.parse(localStorage.getItem("gameProgress") || "{}");
-    gameProgress[6] = {
-      completed: true,
-      score: 100,
-      unlocked: true,
-    };
-    localStorage.setItem("gameProgress", JSON.stringify(gameProgress));
-
-    toast({
-      title: "🎉 Вітаємо!",
-      description: "Ви пройшли всі 6 ігор! Ось ваш різдвяний сертифікат!",
-    });
-  };
-
-  const handleDownloadCertificate = () => {
-    toast({
-      title: "📥 Завантаження...",
-      description: "Сертифікат буде завантажено як PDF",
-    });
-    // Тут можна додати реальну логіку завантаження PDF
-  };
+    }
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
 
   const handleShare = () => {
     const shareText = "Я пройшов всі 6 різдвяних ІТ-ігор! 🎄🎮✨";
