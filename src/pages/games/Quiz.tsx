@@ -360,62 +360,79 @@ const Quiz = () => {
       calculateScore();
     }
   };
+  
+const calculateScore = async () => {
+  const allAnswers = { ...userAnswers, [currentQuestion]: selectedAnswers };
+  let correct = 0;
 
+  questions.forEach((q, index) => {
+    const userAns = allAnswers[index] || [];
+    const correctAns = q.correctAnswers;
+
+    if (
+      userAns.length === correctAns.length &&
+      userAns.every(a => correctAns.includes(a))
+    ) {
+      correct++;
+    }
+  });
+
+  const finalScore = Math.round((correct / questions.length) * 100);
+  setScore(finalScore);
+  setShowResults(true);
+
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Оновити прогрес Гри 1
+      await supabase
+        .from('game_progress')
+        .update({
+          completed: true,
+          score: finalScore,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 1);
+
+      // Розблокувати Гру 2 якщо score >= 70
+      if (finalScore >= 70) {
+        await supabase
+          .from('game_progress')
+          .update({ unlocked: true })
+          .eq('user_id', user.id)
+          .eq('game_number', 2);
+
+        toast({
+          title: "🎉 Вітаємо!",
+          description: `Ви набрали ${finalScore} балів! Технічний кросворд розблоковано!`,
+        });
+      } else {
+        toast({
+          title: "😔 Майже!",
+          description: `Ви набрали ${finalScore} балів. Потрібно мінімум 70.`,
+          variant: "destructive",
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error saving progress:', error);
+    toast({
+      title: "⚠️ Помилка збереження",
+      description: "Увійдіть в акаунт щоб зберігати прогрес",
+      variant: "destructive",
+    });
+  }
+};
+  
   const handlePrevious = () => {
     setUserAnswers({ ...userAnswers, [currentQuestion]: selectedAnswers });
     setCurrentQuestion(currentQuestion - 1);
     setSelectedAnswers(userAnswers[currentQuestion - 1] || []);
   };
-
-  const calculateScore = () => {
-    const allAnswers = { ...userAnswers, [currentQuestion]: selectedAnswers };
-    let correct = 0;
-
-    questions.forEach((q, index) => {
-      const userAns = allAnswers[index] || [];
-      const correctAns = q.correctAnswers;
-
-      if (
-        userAns.length === correctAns.length &&
-        userAns.every(a => correctAns.includes(a))
-      ) {
-        correct++;
-      }
-    });
-
-    const finalScore = Math.round((correct / questions.length) * 100);
-    setScore(finalScore);
-    setShowResults(true);
-
-    // Зберегти прогрес
-    const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
-    gameProgress[1] = {
-      completed: true,
-      score: finalScore,
-      unlocked: true
-    };
-    
-    // Розблокувати наступну гру якщо score >= 70
-    if (finalScore >= 70) {
-      gameProgress[2] = {
-        ...gameProgress[2],
-        unlocked: true
-      };
-      
-      toast({
-        title: "🎉 Вітаємо!",
-        description: `Ви набрали ${finalScore} балів! Технічний кросворд розблоковано!`,
-      });
-    } else {
-      toast({
-        title: "😔 Майже!",
-        description: `Ви набрали ${finalScore} балів. Потрібно мінімум 70 для розблокування наступної гри.`,
-        variant: "destructive",
-      });
-    }
-
-    localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
-  };
+;
 
   const handleRestart = () => {
     setCurrentQuestion(0);
