@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, X, Trophy, RefreshCw } from "lucide-react";
@@ -123,49 +124,59 @@ const Networking = () => {
     setShowExplanation(false);
   };
 
-  const calculateScore = () => {
-    const allAnswers = { ...userAnswers, [currentQuestion]: selectedAnswer ?? -1 };
-    let correct = 0;
+  const calculateScore = async () => {
+  const allAnswers = { ...userAnswers, [currentQuestion]: selectedAnswer ?? -1 };
+  let correct = 0;
 
-    questions.forEach((q, index) => {
-      if (allAnswers[index] === q.correctAnswer) {
-        correct++;
-      }
-    });
-
-    const percentage = Math.round((correct / questions.length) * 100);
-    setScore(percentage);
-    setShowResults(true);
-
-    // Зберегти прогрес
-    const gameProgress = JSON.parse(localStorage.getItem("gameProgress") || "{}");
-    gameProgress[5] = {
-      completed: true,
-      score: percentage,
-      unlocked: true,
-    };
-
-    // Розблокувати наступну гру якщо score >= 60
-    if (percentage >= 60) {
-      gameProgress[6] = {
-        ...gameProgress[6],
-        unlocked: true,
-      };
-
-      toast({
-        title: "🎉 Вітаємо!",
-        description: `Ви набрали ${percentage} балів! Фінальний сюрприз розблоковано!`,
-      });
-    } else {
-      toast({
-        title: "😔 Майже!",
-        description: `Ви набрали ${percentage} балів. Потрібно мінімум 60 для розблокування фінального сюрпризу.`,
-        variant: "destructive",
-      });
+  questions.forEach((q, index) => {
+    if (allAnswers[index] === q.correctAnswer) {
+      correct++;
     }
+  });
 
-    localStorage.setItem("gameProgress", JSON.stringify(gameProgress));
-  };
+  const percentage = Math.round((correct / questions.length) * 100);
+  setScore(percentage);
+  setShowResults(true);
+
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      await supabase
+        .from('game_progress')
+        .update({
+          completed: true,
+          score: percentage,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 5);
+
+      // Розблокувати Гру 6 якщо score >= 60
+      if (percentage >= 60) {
+        await supabase
+          .from('game_progress')
+          .update({ unlocked: true })
+          .eq('user_id', user.id)
+          .eq('game_number', 6);
+
+        toast({
+          title: "🎉 Вітаємо!",
+          description: `Ви набрали ${percentage} балів! Фінальний сюрприз розблоковано!`,
+        });
+      } else {
+        toast({
+          title: "😔 Майже!",
+          description: `Ви набрали ${percentage} балів. Потрібно мінімум 60.`,
+          variant: "destructive",
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
 
   const handleRestart = () => {
     setCurrentQuestion(0);
