@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Trophy, RefreshCw, Check, X } from "lucide-react";
@@ -8,7 +7,19 @@ import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
+interface TestResult {
+  passed: boolean;
+  input: any;
+  expected: any;
+  actual: any;
+}
+
+interface TestCase {
+  input: any;
+  expected: number;
+}
 
 const Coding = () => {
   const navigate = useNavigate();
@@ -17,17 +28,12 @@ const Coding = () => {
   // Ваш код тут
   
 }`);
-  const [testResults, setTestResults] = useState<{ passed: boolean; input: any; expected: any; actual: any }[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [allTestsPassed, setAllTestsPassed] = useState(false);
 
   const challenge = {
     title: "Підрахунок подарунків",
-    description: `Напишіть функцію countGifts(wishlist), яка повертає загальну кількість подарунків.
-
-Приклад:
-countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
-// Повинно повернути: 7`,
+    description: "Напишіть функцію countGifts(wishlist), яка повертає загальну кількість подарунків.\n\nПриклад:\ncountGifts([{name:\"laptop\", quantity:2}, {name:\"mouse\", quantity:5}])\n// Повинно повернути: 7",
     
     testCases: [
       {
@@ -43,17 +49,17 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
         expected: 0
       },
       {
-        input: [{ name: "телефон", quantity: 1 }, { name: "навушники", quantity: 2 }, { name: "клавіатура", quantity: 1 }],
-        expected: 4
+        input: [{ name: "телефон", quantity: 1 }, { name: "навушники", quantity: 2 }],
+        expected: 3
       },
-    ]
+    ] as TestCase[]
   };
 
   const handleRunTests = async () => {
     try {
       const userFunction = new Function("return " + code)();
 
-      const results = challenge.testCases.map((testCase) => {
+      const results: TestResult[] = challenge.testCases.map((testCase) => {
         try {
           const actual = userFunction(testCase.input);
           return {
@@ -67,39 +73,36 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
             passed: false,
             input: testCase.input,
             expected: testCase.expected,
-            actual: `Error: ${error}`,
+            actual: "Error: " + String(error),
           };
         }
       });
 
       setTestResults(results);
       const allPassed = results.every((r) => r.passed);
-      setAllTestsPassed(allPassed);
 
       if (allPassed) {
         setShowResults(true);
 
-        // Зберегти в Supabase
         try {
           const { data: { user } } = await supabase.auth.getUser();
           
           if (user) {
             await supabase
-              .from('game_progress')
+              .from("game_progress")
               .update({
                 completed: true,
                 score: 100,
                 completed_at: new Date().toISOString()
               })
-              .eq('user_id', user.id)
-              .eq('game_number', 4);
+              .eq("user_id", user.id)
+              .eq("game_number", 4);
 
-            // Розблокувати Гру 5
             await supabase
-              .from('game_progress')
+              .from("game_progress")
               .update({ unlocked: true })
-              .eq('user_id', user.id)
-              .eq('game_number', 5);
+              .eq("user_id", user.id)
+              .eq("game_number", 5);
 
             toast({
               title: "🎉 Вітаємо!",
@@ -107,7 +110,7 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
             });
           }
         } catch (error) {
-          console.error('Error saving progress:', error);
+          console.error("Error saving progress:", error);
         }
       } else {
         toast({
@@ -119,7 +122,7 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
     } catch (error) {
       toast({
         title: "❌ Помилка в коді",
-        description: `${error}`,
+        description: String(error),
         variant: "destructive",
       });
     }
@@ -132,7 +135,6 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
 }`);
     setTestResults([]);
     setShowResults(false);
-    setAllTestsPassed(false);
   };
 
   const insertText = (text: string) => {
@@ -142,7 +144,6 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
       const newCode = code.substring(0, start) + text + code.substring(end);
       setCode(newCode);
       
-      // Встановити курсор після вставленого тексту
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.selectionStart = start + text.length;
@@ -207,7 +208,6 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Challenge Description */}
             <div className="glass-card p-4 md:p-6 rounded-3xl">
               <h2 className="text-xl md:text-2xl font-bold mb-3 text-christmas-gold">
                 {challenge.title}
@@ -233,7 +233,6 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
               </div>
             </div>
 
-            {/* Code Editor */}
             <div className="glass-card p-4 md:p-6 rounded-3xl">
               <h3 className="text-base md:text-lg font-semibold mb-3">Ваш код:</h3>
               <Textarea
@@ -242,15 +241,10 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
                 onChange={(e) => setCode(e.target.value)}
                 className="font-mono text-xs md:text-sm min-h-[250px] md:min-h-[300px] bg-black/30 border-white/20"
                 placeholder="Напишіть ваш код тут..."
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
               />
 
-              {/* Quick insert buttons for mobile */}
               <div className="mt-3 flex flex-wrap gap-1 md:hidden">
-                {["return ", ".map(", ".reduce(", ".filter(", "=>", "{ }", "( )", "[ ]"].map((snippet) => (
+                {["return ", ".map(", ".reduce(", "=>", "{ }", "( )"].map((snippet) => (
                   <button
                     key={snippet}
                     onClick={() => insertText(snippet)}
@@ -276,7 +270,6 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
                 </Button>
               </div>
 
-              {/* Test Results */}
               {testResults.length > 0 && (
                 <div className="mt-4">
                   <h3 className="text-base font-semibold mb-2">Результати:</h3>
@@ -284,11 +277,12 @@ countGifts([{name:"laptop", quantity:2}, {name:"mouse", quantity:5}])
                     {testResults.map((result, i) => (
                       <div
                         key={i}
-                        className={`p-2 md:p-3 rounded-lg border-2 text-xs ${
+                        className={cn(
+                          "p-2 md:p-3 rounded-lg border-2 text-xs",
                           result.passed
                             ? "border-green-500 bg-green-500/10"
                             : "border-red-500 bg-red-500/10"
-                        }`}
+                        )}
                       >
                         <div className="flex items-start gap-2">
                           {result.passed ? (
