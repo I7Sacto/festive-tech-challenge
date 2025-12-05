@@ -26,21 +26,17 @@ interface Clue {
   startCol: number;
 }
 
-// Сітка 8x8 з правильним розміщенням слів
 const clues: Clue[] = [
-  // По горизонталі
-  { id: 1, number: 1, clue: "Система контролю версій", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
-  { id: 2, number: 2, clue: "Протокол веб-серверів", answer: "HTTP", direction: "across", startRow: 2, startCol: 0 },
-  { id: 3, number: 3, clue: "Мова запитів до БД", answer: "SQL", direction: "across", startRow: 4, startCol: 0 },
-  { id: 4, number: 4, clue: "Файловий протокол", answer: "FTP", direction: "across", startRow: 6, startCol: 0 },
-  { id: 5, number: 5, clue: "Програмний інтерфейс", answer: "API", direction: "across", startRow: 0, startCol: 5 },
-  
-  // По вертикалі
-  { id: 6, number: 6, clue: "Доменні імена", answer: "DNS", direction: "down", startRow: 1, startCol: 1 },
-  { id: 7, number: 7, clue: "Безпечний Shell", answer: "SSH", direction: "down", startRow: 1, startCol: 3 },
-  { id: 8, number: 8, clue: "JavaScript Object", answer: "JSON", direction: "down", startRow: 0, startCol: 6 },
-  { id: 9, number: 9, clue: "Continuous Integration", answer: "CI", direction: "down", startRow: 3, startCol: 4 },
-  { id: 10, number: 10, clue: "Local Area Network", answer: "LAN", direction: "down", startRow: 5, startCol: 2 },
+  { id: 1, number: 1, clue: "Система контролю версій від Linus Torvalds", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
+  { id: 2, number: 2, clue: "Continuous Integration and Continuous ___", answer: "DELIVERY", direction: "across", startRow: 0, startCol: 4 },
+  { id: 3, number: 3, clue: "Платформа контейнеризації", answer: "DOCKER", direction: "down", startRow: 0, startCol: 0 },
+  { id: 4, number: 4, clue: "Протокол передачі гіпертексту", answer: "HTTP", direction: "across", startRow: 2, startCol: 1 },
+  { id: 5, number: 5, clue: "Domain Name ___", answer: "SYSTEM", direction: "down", startRow: 1, startCol: 5 },
+  { id: 6, number: 6, clue: "Structured Query ___", answer: "LANGUAGE", direction: "across", startRow: 4, startCol: 0 },
+  { id: 7, number: 7, clue: "Система оркестрації контейнерів", answer: "KUBERNETES", direction: "down", startRow: 2, startCol: 7 },
+  { id: 8, number: 8, clue: "Інструмент автоматизації від HashiCorp", answer: "TERRAFORM", direction: "across", startRow: 6, startCol: 2 },
+  { id: 9, number: 9, clue: "Відкритий протокол передачі файлів", answer: "FTP", direction: "across", startRow: 8, startCol: 0 },
+  { id: 10, number: 10, clue: "Application Programming ___", answer: "INTERFACE", direction: "down", startRow: 4, startCol: 3 },
 ];
 
 const Crossword = () => {
@@ -63,7 +59,7 @@ const Crossword = () => {
   }, [selectedCell]);
 
   const initializeGrid = () => {
-    const gridSize = 8;
+    const gridSize = 10;
     const newGrid: CrosswordCell[][] = Array(gridSize)
       .fill(null)
       .map(() =>
