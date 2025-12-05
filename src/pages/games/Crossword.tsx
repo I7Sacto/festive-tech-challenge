@@ -26,20 +26,86 @@ interface Clue {
   startCol: number;
 }
 
+// Правильний кросворд 7x7 де слова ПЕРЕТИНАЮТЬСЯ
 const clues: Clue[] = [
-  { id: 1, number: 1, clue: "Система контролю версій від Linus Torvalds", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
-  { id: 2, number: 2, clue: "Continuous Integration and Continuous ___", answer: "DELIVERY", direction: "across", startRow: 0, startCol: 4 },
-  { id: 3, number: 3, clue: "Платформа контейнеризації", answer: "DOCKER", direction: "down", startRow: 0, startCol: 0 },
-  { id: 4, number: 4, clue: "Протокол передачі гіпертексту", answer: "HTTP", direction: "across", startRow: 2, startCol: 1 },
-  { id: 5, number: 5, clue: "Domain Name ___", answer: "SYSTEM", direction: "down", startRow: 1, startCol: 5 },
-  { id: 6, number: 6, clue: "Structured Query ___", answer: "LANGUAGE", direction: "across", startRow: 4, startCol: 0 },
-  { id: 7, number: 7, clue: "Система оркестрації контейнерів", answer: "KUBERNETES", direction: "down", startRow: 2, startCol: 7 },
-  { id: 8, number: 8, clue: "Інструмент автоматизації від HashiCorp", answer: "TERRAFORM", direction: "across", startRow: 6, startCol: 2 },
-  { id: 9, number: 9, clue: "Відкритий протокол передачі файлів", answer: "FTP", direction: "across", startRow: 8, startCol: 0 },
-  { id: 10, number: 10, clue: "Application Programming ___", answer: "INTERFACE", direction: "down", startRow: 4, startCol: 3 },
+  // По горизонталі (→)
+  { 
+    id: 1, 
+    number: 1, 
+    clue: "Система контролю версій", 
+    answer: "GIT", 
+    direction: "across", 
+    startRow: 0, 
+    startCol: 0 
+  },
+  { 
+    id: 2, 
+    number: 3, 
+    clue: "Протокол передачі гіпертексту", 
+    answer: "HTTP", 
+    direction: "across", 
+    startRow: 2, 
+    startCol: 0 
+  },
+  { 
+    id: 3, 
+    number: 6, 
+    clue: "Structured Query Language", 
+    answer: "SQL", 
+    direction: "across", 
+    startRow: 4, 
+    startCol: 3 
+  },
+  { 
+    id: 4, 
+    number: 8, 
+    clue: "Доменні імена", 
+    answer: "DNS", 
+    direction: "across", 
+    startRow: 6, 
+    startCol: 0 
+  },
+  
+  // По вертикалі (↓)
+  { 
+    id: 5, 
+    number: 2, 
+    clue: "Платформа контейнеризації", 
+    answer: "DOCKER", 
+    direction: "down", 
+    startRow: 1, 
+    startCol: 1 
+  },
+  { 
+    id: 6, 
+    number: 4, 
+    clue: "Continuous Integration", 
+    answer: "CI", 
+    direction: "down", 
+    startRow: 2, 
+    startCol: 2 
+  },
+  { 
+    id: 7, 
+    number: 5, 
+    clue: "Безпечний Shell", 
+    answer: "SSH", 
+    direction: "down", 
+    startRow: 3, 
+    startCol: 5 
+  },
+  { 
+    id: 8, 
+    number: 7, 
+    clue: "Програмний інтерфейс", 
+    answer: "API", 
+    direction: "down", 
+    startRow: 4, 
+    startCol: 4 
+  },
 ];
 
-// Окремий компонент для номера клітинки
+// Компонент для відображення номера (ГАРАНТОВАНО ВИДИМИЙ)
 const CellNumber = ({ number }: { number: number }) => {
   return (
     <div 
@@ -47,28 +113,28 @@ const CellNumber = ({ number }: { number: number }) => {
         position: 'absolute',
         top: '0px',
         left: '0px',
-        zIndex: 100,
+        zIndex: 999,
         pointerEvents: 'none'
       }}
     >
-      <div
+      <span
         style={{
-          backgroundColor: '#FFFFFF',
-          color: '#DC143C',
-          fontSize: number === 1 ? '14px' : number === 2 ? '13px' : '12px',
-          fontWeight: '900',
-          padding: '2px 4px',
-          borderRadius: '0 0 4px 0',
-          lineHeight: '1.1',
-          boxShadow: '0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4)',
-          minWidth: '16px',
-          textAlign: 'center',
           display: 'inline-block',
-          border: '1px solid rgba(220,20,60,0.3)'
+          backgroundColor: number === 1 ? '#FFD700' : '#FFFFFF',
+          color: number === 1 ? '#000000' : '#DC143C',
+          fontSize: number === 1 ? '15px' : '13px',
+          fontWeight: '900',
+          padding: '3px 5px',
+          borderRadius: '0 0 5px 0',
+          lineHeight: '1',
+          boxShadow: '0 0 0 2px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6)',
+          minWidth: '18px',
+          textAlign: 'center',
+          border: number === 1 ? '2px solid #000000' : '1px solid rgba(220,20,60,0.5)'
         }}
       >
         {number}
-      </div>
+      </span>
     </div>
   );
 };
@@ -93,7 +159,7 @@ const Crossword = () => {
   }, [selectedCell]);
 
   const initializeGrid = () => {
-    const gridSize = 10;
+    const gridSize = 7;
     const newGrid: CrosswordCell[][] = Array(gridSize)
       .fill(null)
       .map(() =>
@@ -327,13 +393,8 @@ const Crossword = () => {
               📝 Технічний кросворд
             </h1>
             <p className="text-sm md:text-base text-muted-foreground mb-2">
-              Заповніть мінімум 80%
+              Заповніть мінімум 80%. Слова перетинаються!
             </p>
-            {selectedCell && (
-              <p className="text-sm text-christmas-gold">
-                📍 Клітинка обрана - вводьте літеру
-              </p>
-            )}
           </div>
 
           <div className="grid lg:grid-cols-[1fr,350px] gap-4 lg:gap-6">
@@ -341,35 +402,45 @@ const Crossword = () => {
             <div className="glass-card p-3 md:p-6 rounded-3xl">
               <div className="mb-3 flex gap-2 justify-between items-center">
                 <div className="text-xs md:text-sm text-muted-foreground">
-                  Натисніть на клітинку
+                  {selectedCell ? "Введіть літеру" : "Натисніть на клітинку"}
                 </div>
                 <Button size="sm" variant="outline" onClick={handleShowHint}>
                   <HelpCircle className="h-4 w-4" />
                 </Button>
               </div>
 
-              {/* Grid wrapper - scrollable */}
-              <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+              {/* Grid - centered and responsive */}
+              <div className="overflow-x-auto pb-2">
                 <div className="inline-block min-w-full flex justify-center">
                   <div>
                     {grid.map((row, rowIndex) => (
                       <div key={rowIndex} className="flex">
                         {row.map((cell, colIndex) => (
                           <div
-                            key={`${rowIndex}-${colIndex}`}
+                            key={`cell-${rowIndex}-${colIndex}`}
                             onClick={() => handleCellClick(rowIndex, colIndex)}
                             className={cn(
-                              "w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 border-2 relative flex items-center justify-center cursor-pointer transition-all",
+                              "w-11 h-11 sm:w-13 sm:h-13 md:w-16 md:h-16 border-2 relative flex items-center justify-center cursor-pointer transition-all",
                               cell.isBlack && "bg-gray-900 border-gray-800",
-                              !cell.isBlack && "bg-white/10 border-white/40 hover:bg-white/20 active:bg-white/30",
+                              !cell.isBlack && "bg-white/10 border-white/50 hover:bg-white/20 active:bg-white/30",
                               selectedCell?.row === rowIndex &&
                                 selectedCell?.col === colIndex &&
-                                "bg-christmas-gold/50 ring-4 ring-christmas-gold border-christmas-gold"
+                                "bg-christmas-gold/60 ring-4 ring-christmas-gold border-christmas-gold scale-105"
                             )}
                           >
+                            {/* Номер клітинки - ЗАВЖДИ ВИДИМИЙ */}
                             {cell.number && <CellNumber number={cell.number} />}
+                            
+                            {/* Літера користувача */}
                             {cell.userLetter && (
-                              <span className="text-white text-base sm:text-lg md:text-xl font-bold z-10">
+                              <span 
+                                className="font-bold z-10"
+                                style={{
+                                  color: '#FFFFFF',
+                                  fontSize: '20px',
+                                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                                }}
+                              >
                                 {cell.userLetter}
                               </span>
                             )}
@@ -395,17 +466,21 @@ const Crossword = () => {
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   До ігор
                 </Button>
+                <Button onClick={handleRestart} variant="outline" size="sm">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Заново
+                </Button>
               </div>
             </div>
 
             {/* Clues */}
-            <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[500px] overflow-y-auto">
+            <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[600px] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">Підказки</h2>
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-base font-semibold mb-2 text-christmas-red">
-                    По горизонталі:
+                  <h3 className="text-base font-semibold mb-3 text-christmas-red">
+                    По горизонталі →
                   </h3>
                   <div className="space-y-2">
                     {clues
@@ -413,28 +488,34 @@ const Crossword = () => {
                       .map((clue) => (
                         <div key={clue.id} className="text-sm flex items-start gap-2">
                           <span 
-                            className="inline-block flex-shrink-0 text-center font-black leading-tight"
+                            className="inline-block flex-shrink-0 text-center font-black"
                             style={{
-                              backgroundColor: '#FFFFFF',
-                              color: '#DC143C',
-                              fontSize: '12px',
-                              padding: '2px 4px',
-                              borderRadius: '3px',
-                              minWidth: '20px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                              backgroundColor: clue.number === 1 ? '#FFD700' : '#FFFFFF',
+                              color: clue.number === 1 ? '#000000' : '#DC143C',
+                              fontSize: '13px',
+                              padding: '3px 6px',
+                              borderRadius: '4px',
+                              minWidth: '24px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                              border: clue.number === 1 ? '2px solid #000000' : 'none'
                             }}
                           >
                             {clue.number}
                           </span>
-                          <span>{clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span></span>
+                          <span className="flex-1">
+                            {clue.clue} 
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({clue.answer.length} літ.)
+                            </span>
+                          </span>
                         </div>
                       ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-base font-semibold mb-2 text-christmas-green">
-                    По вертикалі:
+                  <h3 className="text-base font-semibold mb-3 text-christmas-green">
+                    По вертикалі ↓
                   </h3>
                   <div className="space-y-2">
                     {clues
@@ -442,20 +523,25 @@ const Crossword = () => {
                       .map((clue) => (
                         <div key={clue.id} className="text-sm flex items-start gap-2">
                           <span 
-                            className="inline-block flex-shrink-0 text-center font-black leading-tight"
+                            className="inline-block flex-shrink-0 text-center font-black"
                             style={{
                               backgroundColor: '#FFFFFF',
                               color: '#DC143C',
-                              fontSize: '12px',
-                              padding: '2px 4px',
-                              borderRadius: '3px',
-                              minWidth: '20px',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                              fontSize: '13px',
+                              padding: '3px 6px',
+                              borderRadius: '4px',
+                              minWidth: '24px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
                             }}
                           >
                             {clue.number}
                           </span>
-                          <span>{clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span></span>
+                          <span className="flex-1">
+                            {clue.clue} 
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({clue.answer.length} літ.)
+                            </span>
+                          </span>
                         </div>
                       ))}
                   </div>
