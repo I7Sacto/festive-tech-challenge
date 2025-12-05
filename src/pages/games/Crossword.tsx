@@ -28,18 +28,75 @@ interface Clue {
 
 // Правильний кросворд 7x7 де слова ПЕРЕТИНАЮТЬСЯ
 const clues: Clue[] = [
-  // По горизонталі (→)
-const clues: Clue[] = [
   // Горизонталь
-  { id: 1, number: 1, clue: "Система версій", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
-  { id: 2, number: 3, clue: "Файловий протокол", answer: "FTP", direction: "across", startRow: 2, startCol: 0 },
-  { id: 3, number: 5, clue: "Програмний інтерфейс", answer: "API", direction: "across", startRow: 4, startCol: 2 },
+  { 
+    id: 1, 
+    number: 1, 
+    clue: "Система контролю версій", 
+    answer: "GIT", 
+    direction: "across", 
+    startRow: 0, 
+    startCol: 0 
+  },
+  // G на (0,0), I на (0,1), T на (0,2)
+  
+  { 
+    id: 2, 
+    number: 4, 
+    clue: "Протокол веб-серверів", 
+    answer: "HTTP", 
+    direction: "across", 
+    startRow: 2, 
+    startCol: 2 
+  },
+  // H на (2,2), T на (2,3), T на (2,4), P на (2,5)
+  
+  { 
+    id: 3, 
+    number: 6, 
+    clue: "Доменні імена", 
+    answer: "DNS", 
+    direction: "across", 
+    startRow: 4, 
+    startCol: 0 
+  },
+  // D на (4,0), N на (4,1), S на (4,2)
   
   // Вертикаль
-  { id: 4, number: 2, clue: "Доменні імена", answer: "DNS", direction: "down", startRow: 0, startCol: 2 }, // T з GIT!
-  { id: 5, number: 4, clue: "Мова запитів", answer: "SQL", direction: "down", startRow: 2, startCol: 1 }, // T з FTP!
-  { id: 6, number: 6, clue: "Безпечний Shell", answer: "SSH", direction: "down", startRow: 3, startCol: 3 },
+  { 
+    id: 4, 
+    number: 2, 
+    clue: "Програмний інтерфейс", 
+    answer: "API", 
+    direction: "down", 
+    startRow: 0, 
+    startCol: 2 
+  },
+  // A на (0,2)=T(GIT перетин!), P на (1,2), I на (2,2)=H(HTTP перетин!)
+  
+  { 
+    id: 5, 
+    number: 3, 
+    clue: "Structured Query Language", 
+    answer: "SQL", 
+    direction: "down", 
+    startRow: 1, 
+    startCol: 1 
+  },
+  // S на (1,1), Q на (2,1), L на (3,1)
+  
+  { 
+    id: 6, 
+    number: 5, 
+    clue: "Безпечний Shell", 
+    answer: "SSH", 
+    direction: "down", 
+    startRow: 2, 
+    startCol: 4 
+  },
+  // S на (2,4)=T(HTTP перетин!), S на (3,4), H на (4,4)
 ];
+
 
 // Компонент для відображення номера (ГАРАНТОВАНО ВИДИМИЙ)
 const CellNumber = ({ number }: { number: number }) => {
