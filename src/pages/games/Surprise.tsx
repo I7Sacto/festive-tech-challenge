@@ -1,259 +1,422 @@
-import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Trophy, RefreshCw } from "lucide-react";
+import { ArrowLeft, Gift, Download, Share2, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 import { supabase } from "@/lib/supabase";
 
-interface CrosswordCell {
-  letter: string;
-  userLetter: string;
-  number?: number;
-  isBlack: boolean;
-}
-
-interface Clue {
-  id: number;
-  number: number;
-  clue: string;
-  answer: string;
-  direction: "across" | "down";
-  startRow: number;
-  startCol: number;
-}
-
-// Кросворд 8x8 з ПРАВИЛЬНИМИ перетинами
-const clues: Clue[] = [
-  { id: 1, number: 1, clue: "Платформа контейнерів", answer: "DOCKER", direction: "across", startRow: 0, startCol: 0 },
-  { id: 2, number: 4, clue: "Протокол веб", answer: "HTTP", direction: "across", startRow: 2, startCol: 2 },
-  { id: 3, number: 6, clue: "Мова запитів", answer: "SQL", direction: "across", startRow: 4, startCol: 0 },
-  { id: 4, number: 8, clue: "Інтерфейс", answer: "API", direction: "across", startRow: 6, startCol: 1 },
-  
-  { id: 5, number: 2, clue: "Мова Google", answer: "GO", direction: "down", startRow: 0, startCol: 2 },
-  { id: 6, number: 3, clue: "Доменні імена", answer: "DNS", direction: "down", startRow: 0, startCol: 5 },
-  { id: 7, number: 5, clue: "JSON ___", answer: "WEB", direction: "down", startRow: 2, startCol: 4 },
-  { id: 8, number: 7, clue: "Continuous Int", answer: "CI", direction: "down", startRow: 4, startCol: 1 },
-];
-
-const Crossword = () => {
+const Surprise = () => {
   const navigate = useNavigate();
-  const [grid, setGrid] = useState<CrosswordCell[][]>([]);
-  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
-  const [showResults, setShowResults] = useState(false);
-  const [score, setScore] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [inputValue, setInputValue] = useState("");
+  const [isOpened, setIsOpened] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
 
-  useEffect(() => {
-    initializeGrid();
-  }, []);
+  const handleOpenGift = async () => {
+  setIsOpened(true);
 
-  useEffect(() => {
-    if (selectedCell && inputRef.current) {
-      inputRef.current.focus();
+  // Запустити конфеті (той самий код)
+  const duration = 5 * 1000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+    setIsOpened(true);
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+    const duration = 5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  const interval: any = setInterval(function () {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
     }
-  }, [selectedCell]);
 
-  const initializeGrid = () => {
-    const gridSize = 8;
-    const newGrid: CrosswordCell[][] = Array(gridSize).fill(null).map(() =>
-      Array(gridSize).fill(null).map(() => ({ letter: "", userLetter: "", isBlack: true }))
-    );
+    const particleCount = 50 * (timeLeft / duration);
 
-    clues.forEach((clue) => {
-      clue.answer.split("").forEach((letter, index) => {
-        const row = clue.direction === "across" ? clue.startRow : clue.startRow + index;
-        const col = clue.direction === "across" ? clue.startCol + index : clue.startCol;
-
-        if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-          if (newGrid[row][col].isBlack) {
-            newGrid[row][col] = { letter, userLetter: "", isBlack: false, number: index === 0 ? clue.number : undefined };
-          } else {
-            if (index === 0) newGrid[row][col].number = clue.number;
-          }
-        }
-      });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
     });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+    });
+  }, 250);
+    const interval: any = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
 
-    setGrid(newGrid);
-  };
-
-  const handleCellClick = (row: number, col: number) => {
-    if (!grid[row][col].isBlack) {
-      setSelectedCell({ row, col });
-      setInputValue("");
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase();
-    if (value.length > inputValue.length && selectedCell) {
-      const newLetter = value.slice(-1);
-      if (/[A-Z]/.test(newLetter)) {
-        const newGrid = grid.map(row => row.map(cell => ({...cell})));
-        newGrid[selectedCell.row][selectedCell.col].userLetter = newLetter;
-        setGrid(newGrid);
-        setInputValue(newLetter);
-        setTimeout(() => { moveToNextCell(); setInputValue(""); }, 50);
+  setTimeout(() => {
+    setShowCertificate(true);
+  }, 2000);
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
       }
-    } else if (value.length === 0 && selectedCell) {
-      const newGrid = grid.map(row => row.map(cell => ({...cell})));
-      newGrid[selectedCell.row][selectedCell.col].userLetter = "";
-      setGrid(newGrid);
-      setInputValue("");
-    }
-  };
 
-  const moveToNextCell = () => {
-    if (!selectedCell) return;
-    let nextCol = selectedCell.col + 1;
-    let nextRow = selectedCell.row;
-    while (nextRow < grid.length) {
-      while (nextCol < grid[0].length) {
-        if (!grid[nextRow][nextCol].isBlack) {
-          setSelectedCell({ row: nextRow, col: nextCol });
-          return;
-        }
-        nextCol++;
-      }
-      nextCol = 0;
-      nextRow++;
-    }
-  };
+  // Зберегти в Supabase
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Оновити прогрес Гри 6
+      await supabase
+        .from('game_progress')
+        .update({
+          completed: true,
+          score: 100,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('game_number', 6);
+      const particleCount = 50 * (timeLeft / duration);
 
-  const handleCheck = async () => {
-    let correct = 0;
-    let total = 0;
-    grid.forEach(row => row.forEach(cell => {
-      if (!cell.isBlack) {
-        total++;
-        if (cell.userLetter === cell.letter) correct++;
-      }
-    }));
+      // Створити сертифікат
+      const { data: progressData } = await supabase
+        .from('game_progress')
+        .select('score, completed')
+        .eq('user_id', user.id);
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      });
+    }, 250);
 
-    const percentage = Math.round((correct / total) * 100);
-    setScore(percentage);
-    setShowResults(true);
+      if (progressData) {
+        const totalScore = progressData.reduce((sum, g) => sum + g.score, 0);
+        const gamesCompleted = progressData.filter(g => g.completed).length;
+    setTimeout(() => {
+      setShowCertificate(true);
+    }, 2000);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (user) {
-        await supabase.from("game_progress").update({ completed: true, score: percentage, completed_at: new Date().toISOString() }).eq("user_id", user.id).eq("game_number", 2);
-        if (percentage >= 80) {
-          await supabase.from("game_progress").update({ unlocked: true }).eq("user_id", user.id).eq("game_number", 3);
-          toast({ title: "🎉 Вітаємо!", description: `${percentage}%! Пазл розблоковано!` });
-        } else {
-          toast({ title: "Майже!", description: `${percentage}%. Потрібно 80%.`, variant: "destructive" });
+        await supabase
+          .from('certificates')
+          .insert({
+            user_id: user.id,
+            certificate_type: 'Різдвяний ІТ Challenge 2024',
+            total_score: totalScore,
+            games_completed: gamesCompleted
+          });
+      }
+          .from("game_progress")
+          .update({
+            completed: true,
+            score: 100,
+            completed_at: new Date().toISOString()
+          })
+          .eq("user_id", user.id)
+          .eq("game_number", 6);
+
+        const { data: progressData } = await supabase
+          .from("game_progress")
+          .select("score, completed")
+          .eq("user_id", user.id);
+
+        if (progressData) {
+          const totalScore = progressData.reduce((sum, g) => sum + g.score, 0);
+          const gamesCompleted = progressData.filter(g => g.completed).length;
+
+          await supabase
+            .from("certificates")
+            .insert({
+              user_id: user.id,
+              certificate_type: "Різдвяний ІТ Challenge 2024",
+              total_score: totalScore,
+              games_completed: gamesCompleted
+            });
         }
+
+      toast({
+        title: "🎉 Вітаємо!",
+        description: "Ви пройшли всі 6 ігор! Сертифікат створено!",
+      });
+        toast({
+          title: "🎉 Вітаємо!",
+          description: "Ви пройшли всі 6 ігор!",
+        });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error saving progress:", error);
     }
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+};
   };
 
-  if (showResults) {
-    return (
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        <Snowflakes /><Garland /><Header />
-        <main className="pt-36 pb-16 px-4 relative z-10">
-          <div className="container mx-auto max-w-4xl">
-            <div className="glass-card p-8 rounded-3xl text-center">
-              <Trophy className="w-24 h-24 mx-auto mb-6 text-christmas-gold" />
-              <h1 className="text-4xl font-bold mb-4">Завершено! 🎉</h1>
-              <div className="text-6xl font-bold mb-6 bg-gradient-to-r from-christmas-red to-christmas-gold bg-clip-text text-transparent">{score}%</div>
-              {score >= 80 ? <p className="text-lg text-green-500 mb-8">✅ Пазл розблоковано!</p> : <p className="text-lg text-yellow-500 mb-8">⚠️ Потрібно 80%</p>}
-              <div className="flex gap-4 justify-center">
-                <Button onClick={() => {initializeGrid(); setShowResults(false); setScore(0); setInputValue("");}} className="bg-christmas-red"><RefreshCw className="mr-2 h-4 w-4" />Знову</Button>
-                <Button onClick={() => navigate("/games")} variant="outline">До ігор</Button>
-              </div>
+  const handleDownloadCertificate = () => {
+    toast({
+      title: "📥 Завантаження...",
+      description: "Сертифікат буде завантажено",
+    });
+  };
+
+  const handleShare = () => {
+    const shareText = "Я пройшов всі 6 різдвяних ІТ-ігор! 🎄🎮✨";
+@@ -105,18 +108,17 @@ const Surprise = () => {
+        title: "Різдвяний ІТ Challenge",
+        text: shareText,
+      }).catch(() => {
+        // Fallback - копіювати в буфер
+        navigator.clipboard.writeText(shareText);
+        toast({
+          title: "📋 Скопійовано!",
+          description: "Текст скопійовано в буфер обміну",
+          description: "Текст скопійовано в буфер",
+        });
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
+      toast({
+        title: "📋 Скопійовано!",
+        description: "Текст скопійовано в буфер обміну",
+        description: "Текст скопійовано в буфер",
+      });
+    }
+  };
+@@ -134,7 +136,7 @@ const Surprise = () => {
+              🎁 Фінальний сюрприз
+            </h1>
+            <p className="text-muted-foreground">
+              Ви пройшли всі 6 ігор! Натисніть на подарунок щоб розкрити сюрприз!
+              Ви пройшли всі 6 ігор! Натисніть на подарунок!
+            </p>
+          </div>
+
+@@ -145,167 +147,70 @@ const Surprise = () => {
+                className="relative group cursor-pointer transition-transform hover:scale-110 active:scale-95"
+              >
+                <div className="text-[200px] animate-bounce">🎁</div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Sparkles className="h-12 w-12 text-christmas-gold animate-pulse" />
+                </div>
+              </button>
+              <p className="text-xl font-semibold mt-6 text-christmas-gold animate-pulse">
+                Натисніть на подарунок!
+              </p>
             </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <Snowflakes /><Garland /><Header />
-      <input ref={inputRef} type="text" value={inputValue} onChange={handleInputChange} className="fixed -top-96 opacity-0 pointer-events-auto" autoComplete="off" autoCorrect="off" autoCapitalize="characters" />
-
-      <main className="pt-36 pb-16 px-1 sm:px-2 relative z-10">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-3">
-            <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-christmas-red to-christmas-gold bg-clip-text text-transparent">📝 Кросворд</h1>
-            <p className="text-xs text-muted-foreground">80%+</p>
-          </div>
-
-          <div className="grid lg:grid-cols-[1fr,280px] gap-2">
-            <div className="glass-card p-2 md:p-3 rounded-2xl">
-              <div className="overflow-auto">
-                <div className="inline-block">
-                  {grid.map((row, ri) => (
-                    <div key={ri} className="flex">
-                      {row.map((cell, ci) => (
-                        <div
-                          key={`${ri}-${ci}`}
-                          onClick={() => handleCellClick(ri, ci)}
-                          className={cn(
-                            "w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 border relative flex items-center justify-center cursor-pointer",
-                            cell.isBlack && "bg-gray-900 border-gray-800",
-                            !cell.isBlack && "bg-white/10 border-white/40 hover:bg-white/20",
-                            selectedCell?.row === ri && selectedCell?.col === ci && "bg-christmas-gold/60 ring-2 ring-christmas-gold"
-                          )}
-                        >
-                          {cell.number && (
-                            <span className="absolute top-0 left-0 bg-christmas-gold text-black font-black text-[9px] px-1 py-0.5 rounded-br z-50 leading-none shadow-lg">{cell.number}</span>
-                          )}
-                          {cell.userLetter && <span className="text-white text-base md:text-xl font-bold z-10">{cell.userLetter}</span>}
+          ) : !showCertificate ? (
+            <div className="glass-card p-8 rounded-3xl text-center py-12">
+              <div className="text-8xl mb-6">🎊</div>
+              <h2 className="text-3xl font-bold mb-4">Розпаковуємо...</h2>
+            </div>
+          ) : (
+            <div className="glass-card p-8 rounded-3xl">
+              {!showCertificate ? (
+                <div className="text-center py-12">
+                  <div className="text-8xl mb-6 animate-spin-slow">🎊</div>
+                  <h2 className="text-3xl font-bold mb-4">Розпаковуємо...</h2>
+                  <div className="w-64 h-2 bg-white/10 rounded-full mx-auto overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-christmas-red to-christmas-gold animate-progress" />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Certificate */}
+                  <div className="border-8 border-double border-christmas-gold p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 mb-6">
+                    <div className="text-center">
+                      <div className="text-6xl mb-4">🏆</div>
+                      <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-christmas-red to-christmas-gold bg-clip-text text-transparent">
+                        Сертифікат Досягнення
+                      </h2>
+                      
+                      <div className="my-8">
+                        <p className="text-xl mb-4">Цей сертифікат підтверджує, що</p>
+                        <p className="text-3xl font-bold text-christmas-gold mb-4">
+                          ІТ-професіонал
+                        </p>
+                        <p className="text-xl mb-6">успішно пройшов</p>
+                        
+                        <div className="bg-gradient-to-r from-christmas-red/20 to-christmas-gold/20 p-6 rounded-xl mb-6">
+                          <p className="text-2xl font-bold mb-2">🎄 Різдвяний ІТ Challenge 🎄</p>
+                          <p className="text-lg">Всі 6 різдвяних ігор на теми:</p>
+                          <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                            <div>✅ Системне адміністрування</div>
+                            <div>✅ Комп'ютерні мережі</div>
+                            <div>✅ Програмування</div>
+                            <div>✅ DevOps</div>
+                            <div className="col-span-2">✅ Технічні знання та навички</div>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-2 flex gap-2 justify-center">
-                <Button onClick={handleCheck} className="bg-gradient-to-r from-christmas-red to-christmas-gold" size="sm"><Check className="h-3 w-3 mr-1" />Перевірити</Button>
-                <Button onClick={() => navigate("/games")} variant="outline" size="sm">До ігор</Button>
-              </div>
-            </div>
 
-            <div className="glass-card p-3 rounded-2xl max-h-[480px] overflow-y-auto">
-              <h2 className="text-base font-bold mb-2">Підказки</h2>
-              <div className="space-y-2">
-                <div>
-                  <h3 className="text-xs font-semibold mb-1 text-christmas-red">→ Горизонталь:</h3>
-                  <div className="space-y-1">
-                    {clues.filter(c => c.direction === "across").map(c => (
-                      <div key={c.id} className="text-[11px] flex gap-1">
-                        <span className="bg-christmas-gold text-black font-black px-1.5 py-0.5 rounded text-[10px] leading-none">{c.number}</span>
-                        <span>{c.clue} ({c.answer.length})</span>
+                        <p className="text-lg mb-2">Дата завершення:</p>
+                        <p className="text-xl font-semibold text-christmas-gold mb-6">
+                          {new Date().toLocaleDateString("uk-UA", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+
+                        <div className="flex items-center justify-center gap-8 mt-8">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">🎮</div>
+                            <p className="text-sm text-muted-foreground">6/6 Ігор</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">⭐</div>
+                            <p className="text-sm text-muted-foreground">90% Прогрес</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">🏅</div>
+                            <p className="text-sm text-muted-foreground">Майстер</p>
+                          </div>
+                        </div>
                       </div>
-                    ))}
+
+                      <div className="border-t-2 border-christmas-gold/30 pt-6 mt-6">
+                        <p className="text-sm text-muted-foreground italic">
+                          "Знання - це найкращий різдвяний подарунок!"
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Різдвяний ІТ Challenge 2024 🎄
+                        </p>
+                      </div>
+              <div className="border-8 border-double border-christmas-gold p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 mb-6">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🏆</div>
+                  <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-christmas-red to-christmas-gold bg-clip-text text-transparent">
+                    Сертифікат Досягнення
+                  </h2>
+                  
+                  <div className="my-8">
+                    <p className="text-xl mb-4">Цей сертифікат підтверджує, що</p>
+                    <p className="text-3xl font-bold text-christmas-gold mb-4">
+                      ІТ-професіонал
+                    </p>
+                    <p className="text-xl mb-6">успішно пройшов</p>
+                    
+                    <div className="bg-gradient-to-r from-christmas-red/20 to-christmas-gold/20 p-6 rounded-xl mb-6">
+                      <p className="text-2xl font-bold mb-2">🎄 Різдвяний ІТ Challenge 🎄</p>
+                      <p className="text-lg">Всі 6 різдвяних ігор</p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4 justify-center flex-wrap">
+                    <Button
+                      onClick={handleDownloadCertificate}
+                      className="bg-gradient-to-r from-christmas-red to-christmas-gold hover:opacity-90"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Завантажити PDF
+                    </Button>
+                    <Button onClick={handleShare} variant="outline">
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Поділитися
+                    </Button>
+                    <Button onClick={() => navigate("/games")} variant="outline">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      До ігор
+                    </Button>
+                  </div>
+
+                  {/* Bonus Content */}
+                  <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-christmas-green/20 to-christmas-red/20 border-2 border-christmas-gold/30">
+                    <h3 className="text-xl font-bold mb-4 text-center">🎉 Бонусні подарунки:</h3>
+                    <div className="grid md:grid-cols-3 gap-4 text-center">
+                      <div className="p-4 rounded-lg bg-white/5">
+                        <div className="text-4xl mb-2">📚</div>
+                        <p className="font-semibold mb-1">Електронна книга</p>
+                        <p className="text-sm text-muted-foreground">
+                          "Різдвяні рецепти для DevOps"
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-white/5">
+                        <div className="text-4xl mb-2">🎨</div>
+                        <p className="font-semibold mb-1">Святкові стікери</p>
+                        <p className="text-sm text-muted-foreground">
+                          Набір різдвяних ІТ-стікерів
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-white/5">
+                        <div className="text-4xl mb-2">🎬</div>
+                        <p className="font-semibold mb-1">GIF-анімації</p>
+                        <p className="text-sm text-muted-foreground">
+                          Колекція святкових GIF
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-lg mb-2">Дата:</p>
+                    <p className="text-xl font-semibold text-christmas-gold mb-6">
+                      {new Date().toLocaleDateString("uk-UA", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-xs font-semibold mb-1 text-christmas-green">↓ Вертикаль:</h3>
-                  <div className="space-y-1">
-                    {clues.filter(c => c.direction === "down").map(c => (
-                      <div key={c.id} className="text-[11px] flex gap-1">
-                        <span className="bg-christmas-gold text-black font-black px-1.5 py-0.5 rounded text-[10px] leading-none">{c.number}</span>
-                        <span>{c.clue} ({c.answer.length})</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              )}
+              </div>
+
+              <div className="flex gap-4 justify-center flex-wrap">
+                <Button
+                  onClick={handleDownloadCertificate}
+                  className="bg-gradient-to-r from-christmas-red to-christmas-gold hover:opacity-90"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Завантажити PDF
+                </Button>
+                <Button onClick={handleShare} variant="outline">
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Поділитися
+                </Button>
+                <Button onClick={() => navigate("/games")} variant="outline">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  До ігор
+                </Button>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
+
+      <style>{`
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 3s linear infinite;
+        }
+        
+        @keyframes progress {
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
+        }
+        .animate-progress {
+          animation: progress 2s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
-
-export default Crossword;
