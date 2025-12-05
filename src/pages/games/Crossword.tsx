@@ -1,5 +1,3 @@
-Зрозумів! Створю кросворд ІНШИМ МЕТОДОМ - не сітка, а **список слів з індивідуальними полями**. Це гарантує що все працює:
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Trophy, RefreshCw } from "lucide-react";
@@ -195,5 +193,3 @@ const Crossword = () => {
 };
 
 export default Crossword;
-
-Замініть ВЕСЬ файл через GitHub! 🚀
