@@ -336,16 +336,18 @@ const Crossword = () => {
                         >
                           {cell.number && (
                             <span 
-                              className="absolute top-0.5 left-1 text-xs font-black z-20"
+                              className="absolute top-0.5 left-1 font-black z-20 pointer-events-none"
                               style={{
                                 color: "#FFD700",
-                                textShadow: "0 0 3px black, 0 0 5px black, 1px 1px 2px black",
-                                fontSize: cell.number === 1 ? "14px" : "12px"
+                                textShadow: "0 0 4px #000, 0 0 6px #000, 1px 1px 3px #000, -1px -1px 3px #000",
+                                fontSize: "13px",
+                                lineHeight: "1"
                               }}
                             >
                               {cell.number}
                             </span>
                           )}
+                         
                           {cell.userLetter && (
                             <span className="text-white text-xl sm:text-2xl md:text-3xl font-bold z-10">
                               {cell.userLetter}
