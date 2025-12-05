@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase, GameProgress as GameProgressType } from "@/lib/supabase";
 import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
 import Header from "@/components/Header";
@@ -58,45 +60,64 @@ const games = [
   },
 ];
 
-// Зберігання прогресу в localStorage
-const getGameProgress = () => {
-  const saved = localStorage.getItem('gameProgress');
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  return {
-    1: { completed: false, score: 0, unlocked: true },
-    2: { completed: false, score: 0, unlocked: false },
-    3: { completed: false, score: 0, unlocked: false },
-    4: { completed: false, score: 0, unlocked: false },
-    5: { completed: false, score: 0, unlocked: false },
-    6: { completed: false, score: 0, unlocked: false },
-  };
-};
-
 const Games = () => {
   const navigate = useNavigate();
-  const [gameProgress, setGameProgress] = useState(getGameProgress());
+  const { user } = useAuth();
+  const [gameProgress, setGameProgress] = useState<GameProgressType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Оновлення прогресу при зміні localStorage
   useEffect(() => {
-    const handleStorageChange = () => {
-      setGameProgress(getGameProgress());
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    // Також перевіряємо при mount
-    const interval = setInterval(() => {
-      setGameProgress(getGameProgress());
-    }, 1000);
+    if (user) {
+      fetchGameProgress();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
+  // Оновлення прогресу кожні 2 секунди
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      fetchGameProgress();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const fetchGameProgress = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("game_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("game_number", { ascending: true });
+
+      if (error) throw error;
+      
+      if (data) {
+        setGameProgress(data);
+      }
+    } catch (error) {
+      console.error("Error fetching game progress:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGameClick = (path: string, isLocked: boolean) => {
+    if (!user) {
+      toast({
+        title: "⚠️ Потрібна авторизація",
+        description: "Увійдіть в акаунт щоб грати та зберігати прогрес",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
     if (isLocked) {
       toast({
         title: "🔒 Гра заблокована",
@@ -108,12 +129,25 @@ const Games = () => {
     navigate(path);
   };
 
-  const isGameUnlocked = (gameNumber: number): boolean => {
-    return gameProgress[gameNumber as keyof typeof gameProgress]?.unlocked || false;
+  const getGameProgress = (gameNumber: number) => {
+    return gameProgress.find((g) => g.game_number === gameNumber);
   };
 
-  const completedGames = Object.values(gameProgress).filter(g => g.completed).length;
+  const isGameUnlocked = (gameNumber: number): boolean => {
+    const progress = getGameProgress(gameNumber);
+    return progress?.unlocked || false;
+  };
+
+  const completedGames = gameProgress.filter((g) => g.completed).length;
   const totalProgress = Math.round((completedGames / games.length) * 100);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-2xl">Завантаження...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -131,7 +165,15 @@ const Games = () => {
             <p className="text-lg text-muted-foreground mb-6">
               Пройдіть всі 6 ігор та отримайте фінальний сюрприз!
             </p>
-            
+
+            {!user && (
+              <div className="mb-6 p-4 rounded-xl bg-yellow-500/10 border-2 border-yellow-500/50 max-w-md mx-auto">
+                <p className="text-yellow-500">
+                  ⚠️ Увійдіть в акаунт щоб зберігати прогрес
+                </p>
+              </div>
+            )}
+
             {/* Progress */}
             <div className="max-w-md mx-auto">
               <ProgressBar progress={totalProgress} />
@@ -144,9 +186,9 @@ const Games = () => {
           {/* Games Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {games.map((game) => {
+              const progress = getGameProgress(game.gameNumber);
               const isUnlocked = isGameUnlocked(game.gameNumber);
-              const progress = gameProgress[game.gameNumber as keyof typeof gameProgress];
-              
+
               return (
                 <GameCard
                   key={game.gameNumber}
@@ -159,6 +201,23 @@ const Games = () => {
               );
             })}
           </div>
+
+          {/* Debugging info (видаліть після тестування) */}
+          {user && (
+            <div className="mt-8 p-4 rounded-xl bg-white/5 text-xs font-mono">
+              <div>User ID: {user.id}</div>
+              <div>Games loaded: {gameProgress.length}</div>
+              <div className="mt-2">
+                {gameProgress.map((g) => (
+                  <div key={g.id}>
+                    Game {g.game_number}: {g.score} pts, 
+                    {g.completed ? " completed" : " not completed"},
+                    {g.unlocked ? " unlocked" : " locked"}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
