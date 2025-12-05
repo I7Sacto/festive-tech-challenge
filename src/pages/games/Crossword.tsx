@@ -29,80 +29,16 @@ interface Clue {
 // Правильний кросворд 7x7 де слова ПЕРЕТИНАЮТЬСЯ
 const clues: Clue[] = [
   // По горизонталі (→)
-  { 
-    id: 1, 
-    number: 1, 
-    clue: "Система контролю версій", 
-    answer: "GIT", 
-    direction: "across", 
-    startRow: 0, 
-    startCol: 0 
-  },
-  { 
-    id: 2, 
-    number: 3, 
-    clue: "Протокол передачі гіпертексту", 
-    answer: "HTTP", 
-    direction: "across", 
-    startRow: 2, 
-    startCol: 0 
-  },
-  { 
-    id: 3, 
-    number: 6, 
-    clue: "Structured Query Language", 
-    answer: "SQL", 
-    direction: "across", 
-    startRow: 4, 
-    startCol: 3 
-  },
-  { 
-    id: 4, 
-    number: 8, 
-    clue: "Доменні імена", 
-    answer: "DNS", 
-    direction: "across", 
-    startRow: 6, 
-    startCol: 0 
-  },
+const clues: Clue[] = [
+  // Горизонталь
+  { id: 1, number: 1, clue: "Система версій", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
+  { id: 2, number: 3, clue: "Файловий протокол", answer: "FTP", direction: "across", startRow: 2, startCol: 0 },
+  { id: 3, number: 5, clue: "Програмний інтерфейс", answer: "API", direction: "across", startRow: 4, startCol: 2 },
   
-  // По вертикалі (↓)
-  { 
-    id: 5, 
-    number: 2, 
-    clue: "Платформа контейнеризації", 
-    answer: "DOCKER", 
-    direction: "down", 
-    startRow: 1, 
-    startCol: 1 
-  },
-  { 
-    id: 6, 
-    number: 4, 
-    clue: "Continuous Integration", 
-    answer: "CI", 
-    direction: "down", 
-    startRow: 2, 
-    startCol: 2 
-  },
-  { 
-    id: 7, 
-    number: 5, 
-    clue: "Безпечний Shell", 
-    answer: "SSH", 
-    direction: "down", 
-    startRow: 3, 
-    startCol: 5 
-  },
-  { 
-    id: 8, 
-    number: 7, 
-    clue: "Програмний інтерфейс", 
-    answer: "API", 
-    direction: "down", 
-    startRow: 4, 
-    startCol: 4 
-  },
+  // Вертикаль
+  { id: 4, number: 2, clue: "Доменні імена", answer: "DNS", direction: "down", startRow: 0, startCol: 2 }, // T з GIT!
+  { id: 5, number: 4, clue: "Мова запитів", answer: "SQL", direction: "down", startRow: 2, startCol: 1 }, // T з FTP!
+  { id: 6, number: 6, clue: "Безпечний Shell", answer: "SSH", direction: "down", startRow: 3, startCol: 3 },
 ];
 
 // Компонент для відображення номера (ГАРАНТОВАНО ВИДИМИЙ)
@@ -159,7 +95,7 @@ const Crossword = () => {
   }, [selectedCell]);
 
   const initializeGrid = () => {
-    const gridSize = 7;
+    const gridSize = 6;
     const newGrid: CrosswordCell[][] = Array(gridSize)
       .fill(null)
       .map(() =>
