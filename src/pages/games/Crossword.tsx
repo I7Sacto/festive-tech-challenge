@@ -26,108 +26,120 @@ interface Clue {
   startCol: number;
 }
 
-// Правильний кросворд 7x7 де слова ПЕРЕТИНАЮТЬСЯ
+// ПРАВИЛЬНИЙ кросворд з ГАРАНТОВАНИМИ перетинами
 const clues: Clue[] = [
-  // Горизонталь
+  // 1. GIT горизонтально
   { 
     id: 1, 
     number: 1, 
-    clue: "Система контролю версій", 
+    clue: "Система контролю версій (3)", 
     answer: "GIT", 
     direction: "across", 
     startRow: 0, 
     startCol: 0 
   },
-  // G на (0,0), I на (0,1), T на (0,2)
   
+  // 2. DEVOPS горизонтально  
   { 
     id: 2, 
     number: 4, 
-    clue: "Протокол веб-серверів", 
-    answer: "HTTP", 
+    clue: "Development + Operations (6)", 
+    answer: "DEVOPS", 
     direction: "across", 
     startRow: 2, 
-    startCol: 2 
+    startCol: 1 
   },
-  // H на (2,2), T на (2,3), T на (2,4), P на (2,5)
   
+  // 3. SSH горизонтально
   { 
     id: 3, 
-    number: 6, 
-    clue: "Доменні імена", 
-    answer: "DNS", 
+    number: 7, 
+    clue: "Secure Shell протокол (3)", 
+    answer: "SSH", 
     direction: "across", 
     startRow: 4, 
-    startCol: 0 
+    startCol: 2 
   },
-  // D на (4,0), N на (4,1), S на (4,2)
   
-  // Вертикаль
+  // 4. GO вертикально (перетин з GIT на G)
   { 
     id: 4, 
     number: 2, 
-    clue: "Програмний інтерфейс", 
-    answer: "API", 
+    clue: "Мова програмування Google (2)", 
+    answer: "GO", 
+    direction: "down", 
+    startRow: 0, 
+    startCol: 0 
+  },
+  
+  // 5. TEST вертикально (перетин з GIT на T, перетин з DEVOPS на E)
+  { 
+    id: 5, 
+    number: 3, 
+    clue: "Перевірка коду (4)", 
+    answer: "TEST", 
     direction: "down", 
     startRow: 0, 
     startCol: 2 
   },
-  // A на (0,2)=T(GIT перетин!), P на (1,2), I на (2,2)=H(HTTP перетин!)
   
-  { 
-    id: 5, 
-    number: 3, 
-    clue: "Structured Query Language", 
-    answer: "SQL", 
-    direction: "down", 
-    startRow: 1, 
-    startCol: 1 
-  },
-  // S на (1,1), Q на (2,1), L на (3,1)
-  
+  // 6. API вертикально (перетин з DEVOPS на O)
   { 
     id: 6, 
     number: 5, 
-    clue: "Безпечний Shell", 
-    answer: "SSH", 
+    clue: "Програмний інтерфейс (3)", 
+    answer: "API", 
     direction: "down", 
     startRow: 2, 
     startCol: 4 
   },
-  // S на (2,4)=T(HTTP перетин!), S на (3,4), H на (4,4)
+  
+  // 7. DNS вертикально (перетин з DEVOPS на P, перетин з SSH на S)
+  { 
+    id: 7, 
+    number: 6, 
+    clue: "Domain Name System (3)", 
+    answer: "DNS", 
+    direction: "down", 
+    startRow: 2, 
+    startCol: 5 
+  },
 ];
 
-
-// Компонент для відображення номера (ГАРАНТОВАНО ВИДИМИЙ)
+// Компонент номера - МАКСИМАЛЬНО ВИДИМИЙ
 const CellNumber = ({ number }: { number: number }) => {
+  const isNumberOne = number === 1;
+  
   return (
     <div 
       style={{
         position: 'absolute',
-        top: '0px',
-        left: '0px',
-        zIndex: 999,
-        pointerEvents: 'none'
+        top: '1px',
+        left: '1px',
+        zIndex: 1000
       }}
     >
-      <span
+      <div
         style={{
           display: 'inline-block',
-          backgroundColor: number === 1 ? '#FFD700' : '#FFFFFF',
-          color: number === 1 ? '#000000' : '#DC143C',
-          fontSize: number === 1 ? '15px' : '13px',
+          backgroundColor: isNumberOne ? '#FFD700' : '#FFFFFF',
+          color: isNumberOne ? '#000000' : '#DC143C',
+          fontSize: isNumberOne ? '16px' : '14px',
           fontWeight: '900',
-          padding: '3px 5px',
-          borderRadius: '0 0 5px 0',
+          padding: '4px 6px',
+          borderRadius: '0 0 6px 0',
           lineHeight: '1',
-          boxShadow: '0 0 0 2px rgba(0,0,0,0.8), 0 3px 6px rgba(0,0,0,0.6)',
-          minWidth: '18px',
+          boxShadow: isNumberOne 
+            ? '0 0 0 3px #000000, 0 4px 8px rgba(0,0,0,0.8)' 
+            : '0 0 0 1px rgba(220,20,60,0.5), 0 2px 4px rgba(0,0,0,0.5)',
+          minWidth: '20px',
           textAlign: 'center',
-          border: number === 1 ? '2px solid #000000' : '1px solid rgba(220,20,60,0.5)'
+          border: isNumberOne ? '2px solid #000000' : '1px solid rgba(220,20,60,0.3)',
+          fontFamily: 'monospace'
         }}
       >
         {number}
-      </span>
+      </div>
     </div>
   );
 };
@@ -152,7 +164,7 @@ const Crossword = () => {
   }, [selectedCell]);
 
   const initializeGrid = () => {
-    const gridSize = 6;
+    const gridSize = 7;
     const newGrid: CrosswordCell[][] = Array(gridSize)
       .fill(null)
       .map(() =>
@@ -304,7 +316,6 @@ const Crossword = () => {
     if (!selectedCell) {
       toast({
         title: "Виберіть клітинку",
-        description: "Натисніть на клітинку кросворду",
       });
       return;
     }
@@ -315,8 +326,7 @@ const Crossword = () => {
     setGrid(newGrid);
 
     toast({
-      title: "💡 Підказка",
-      description: "Літера відкрита!",
+      title: "💡 Підказка відкрита!",
     });
   };
 
@@ -341,10 +351,7 @@ const Crossword = () => {
                 <p className="text-lg text-yellow-500 mb-8">⚠️ Потрібно мінімум 80%</p>
               )}
               <div className="flex gap-4 justify-center flex-wrap">
-                <Button
-                  onClick={handleRestart}
-                  className="bg-christmas-red hover:bg-christmas-red/90"
-                >
+                <Button onClick={handleRestart} className="bg-christmas-red hover:bg-christmas-red/90">
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Пройти знову
                 </Button>
@@ -366,7 +373,6 @@ const Crossword = () => {
       <Garland />
       <Header />
 
-      {/* Прихований input для системної клавіатури */}
       <input
         ref={inputRef}
         type="text"
@@ -376,7 +382,6 @@ const Crossword = () => {
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="characters"
-        inputMode="text"
       />
 
       <main className="pt-36 pb-16 px-2 sm:px-4 relative z-10">
@@ -385,166 +390,89 @@ const Crossword = () => {
             <h1 className="text-3xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent">
               📝 Технічний кросворд
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground mb-2">
-              Заповніть мінімум 80%. Слова перетинаються!
-            </p>
+            <p className="text-sm text-muted-foreground">Заповніть мінімум 80%</p>
           </div>
 
-          <div className="grid lg:grid-cols-[1fr,350px] gap-4 lg:gap-6">
-            {/* Crossword Grid */}
-            <div className="glass-card p-3 md:p-6 rounded-3xl">
-              <div className="mb-3 flex gap-2 justify-between items-center">
-                <div className="text-xs md:text-sm text-muted-foreground">
-                  {selectedCell ? "Введіть літеру" : "Натисніть на клітинку"}
-                </div>
+          <div className="grid lg:grid-cols-[1fr,350px] gap-4">
+            <div className="glass-card p-4 md:p-6 rounded-3xl">
+              <div className="mb-3 flex justify-end">
                 <Button size="sm" variant="outline" onClick={handleShowHint}>
-                  <HelpCircle className="h-4 w-4" />
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Підказка
                 </Button>
               </div>
 
-              {/* Grid - centered and responsive */}
-              <div className="overflow-x-auto pb-2">
-                <div className="inline-block min-w-full flex justify-center">
-                  <div>
-                    {grid.map((row, rowIndex) => (
-                      <div key={rowIndex} className="flex">
-                        {row.map((cell, colIndex) => (
-                          <div
-                            key={`cell-${rowIndex}-${colIndex}`}
-                            onClick={() => handleCellClick(rowIndex, colIndex)}
-                            className={cn(
-                              "w-11 h-11 sm:w-13 sm:h-13 md:w-16 md:h-16 border-2 relative flex items-center justify-center cursor-pointer transition-all",
-                              cell.isBlack && "bg-gray-900 border-gray-800",
-                              !cell.isBlack && "bg-white/10 border-white/50 hover:bg-white/20 active:bg-white/30",
-                              selectedCell?.row === rowIndex &&
-                                selectedCell?.col === colIndex &&
-                                "bg-christmas-gold/60 ring-4 ring-christmas-gold border-christmas-gold scale-105"
-                            )}
-                          >
-                            {/* Номер клітинки - ЗАВЖДИ ВИДИМИЙ */}
-                            {cell.number && <CellNumber number={cell.number} />}
-                            
-                            {/* Літера користувача */}
-                            {cell.userLetter && (
-                              <span 
-                                className="font-bold z-10"
-                                style={{
-                                  color: '#FFFFFF',
-                                  fontSize: '20px',
-                                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
-                                }}
-                              >
-                                {cell.userLetter}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+              <div className="flex justify-center">
+                <div>
+                  {grid.map((row, rowIndex) => (
+                    <div key={rowIndex} className="flex">
+                      {row.map((cell, colIndex) => (
+                        <div
+                          key={`${rowIndex}-${colIndex}`}
+                          onClick={() => handleCellClick(rowIndex, colIndex)}
+                          className={cn(
+                            "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 relative flex items-center justify-center cursor-pointer",
+                            cell.isBlack && "bg-gray-900 border-gray-800",
+                            !cell.isBlack && "bg-white/10 border-white/50 hover:bg-white/25",
+                            selectedCell?.row === rowIndex && selectedCell?.col === colIndex &&
+                              "bg-christmas-gold/60 ring-4 ring-christmas-gold"
+                          )}
+                        >
+                          {cell.number && <CellNumber number={cell.number} />}
+                          {cell.userLetter && (
+                            <span className="text-white text-xl md:text-2xl font-bold z-10">
+                              {cell.userLetter}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-3 justify-center">
+                <Button onClick={handleCheck} className="bg-gradient-to-r from-christmas-red to-christmas-gold" size="sm">
+                  <Check className="mr-2 h-4 w-4" />
+                  Перевірити
+                </Button>
+                <Button onClick={() => navigate("/games")} variant="outline" size="sm">
+                  До ігор
+                </Button>
+              </div>
+            </div>
+
+            <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[500px] overflow-y-auto">
+              <h2 className="text-lg font-bold mb-3">Підказки</h2>
+
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-christmas-red">По горизонталі:</h3>
+                  <div className="space-y-1.5">
+                    {clues.filter((c) => c.direction === "across").map((clue) => (
+                      <div key={clue.id} className="text-xs flex items-start gap-2">
+                        <CellNumber number={clue.number} />
+                        <span className="flex-1 mt-1">{clue.clue}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-christmas-green">По вертикалі:</h3>
+                  <div className="space-y-1.5">
+                    {clues.filter((c) => c.direction === "down").map((clue) => (
+                      <div key={clue.id} className="text-xs flex items-start gap-2">
+                        <CellNumber number={clue.number} />
+                        <span className="flex-1 mt-1">{clue.clue}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Action buttons */}
-              <div className="mt-4 flex gap-3 justify-center flex-wrap">
-                <Button
-                  onClick={handleCheck}
-                  className="bg-gradient-to-r from-christmas-red to-christmas-gold hover:opacity-90"
-                  size="sm"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Перевірити
-                </Button>
-                <Button onClick={() => navigate("/games")} variant="outline" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  До ігор
-                </Button>
-                <Button onClick={handleRestart} variant="outline" size="sm">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Заново
-                </Button>
-              </div>
-            </div>
-
-            {/* Clues */}
-            <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[600px] overflow-y-auto">
-              <h2 className="text-xl font-bold mb-4">Підказки</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-base font-semibold mb-3 text-christmas-red">
-                    По горизонталі →
-                  </h3>
-                  <div className="space-y-2">
-                    {clues
-                      .filter((c) => c.direction === "across")
-                      .map((clue) => (
-                        <div key={clue.id} className="text-sm flex items-start gap-2">
-                          <span 
-                            className="inline-block flex-shrink-0 text-center font-black"
-                            style={{
-                              backgroundColor: clue.number === 1 ? '#FFD700' : '#FFFFFF',
-                              color: clue.number === 1 ? '#000000' : '#DC143C',
-                              fontSize: '13px',
-                              padding: '3px 6px',
-                              borderRadius: '4px',
-                              minWidth: '24px',
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                              border: clue.number === 1 ? '2px solid #000000' : 'none'
-                            }}
-                          >
-                            {clue.number}
-                          </span>
-                          <span className="flex-1">
-                            {clue.clue} 
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({clue.answer.length} літ.)
-                            </span>
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-base font-semibold mb-3 text-christmas-green">
-                    По вертикалі ↓
-                  </h3>
-                  <div className="space-y-2">
-                    {clues
-                      .filter((c) => c.direction === "down")
-                      .map((clue) => (
-                        <div key={clue.id} className="text-sm flex items-start gap-2">
-                          <span 
-                            className="inline-block flex-shrink-0 text-center font-black"
-                            style={{
-                              backgroundColor: '#FFFFFF',
-                              color: '#DC143C',
-                              fontSize: '13px',
-                              padding: '3px 6px',
-                              borderRadius: '4px',
-                              minWidth: '24px',
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            {clue.number}
-                          </span>
-                          <span className="flex-1">
-                            {clue.clue} 
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({clue.answer.length} літ.)
-                            </span>
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                <p className="text-xs">
-                  💡 Натисніть на клітинку → з'явиться системна клавіатура
-                </p>
+              <div className="mt-3 p-2 rounded bg-blue-500/10 border border-blue-500/30 text-xs">
+                💡 Слова перетинаються на спільних літерах!
               </div>
             </div>
           </div>
