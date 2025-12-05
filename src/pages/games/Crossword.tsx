@@ -39,6 +39,40 @@ const clues: Clue[] = [
   { id: 10, number: 10, clue: "Application Programming ___", answer: "INTERFACE", direction: "down", startRow: 4, startCol: 3 },
 ];
 
+// Окремий компонент для номера клітинки
+const CellNumber = ({ number }: { number: number }) => {
+  return (
+    <div 
+      style={{
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        zIndex: 100,
+        pointerEvents: 'none'
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          color: '#DC143C',
+          fontSize: number === 1 ? '14px' : number === 2 ? '13px' : '12px',
+          fontWeight: '900',
+          padding: '2px 4px',
+          borderRadius: '0 0 4px 0',
+          lineHeight: '1.1',
+          boxShadow: '0 0 0 1px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4)',
+          minWidth: '16px',
+          textAlign: 'center',
+          display: 'inline-block',
+          border: '1px solid rgba(220,20,60,0.3)'
+        }}
+      >
+        {number}
+      </div>
+    </div>
+  );
+};
+
 const Crossword = () => {
   const navigate = useNavigate();
   const [grid, setGrid] = useState<CrosswordCell[][]>([]);
@@ -273,6 +307,7 @@ const Crossword = () => {
       <Garland />
       <Header />
 
+      {/* Прихований input для системної клавіатури */}
       <input
         ref={inputRef}
         type="text"
@@ -296,56 +331,57 @@ const Crossword = () => {
             </p>
             {selectedCell && (
               <p className="text-sm text-christmas-gold">
-                📍 Обрано клітинку
+                📍 Клітинка обрана - вводьте літеру
               </p>
             )}
           </div>
 
           <div className="grid lg:grid-cols-[1fr,350px] gap-4 lg:gap-6">
+            {/* Crossword Grid */}
             <div className="glass-card p-3 md:p-6 rounded-3xl">
-              <div className="mb-3 flex gap-2 justify-end">
+              <div className="mb-3 flex gap-2 justify-between items-center">
+                <div className="text-xs md:text-sm text-muted-foreground">
+                  Натисніть на клітинку
+                </div>
                 <Button size="sm" variant="outline" onClick={handleShowHint}>
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Підказка
+                  <HelpCircle className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="flex justify-center overflow-x-auto pb-2">
-                <div className="inline-block">
-                  {grid.map((row, rowIndex) => (
-                    <div key={rowIndex} className="flex">
-                      {row.map((cell, colIndex) => (
-                        <div
-                          key={`${rowIndex}-${colIndex}`}
-                          onClick={() => handleCellClick(rowIndex, colIndex)}
-                          className={cn(
-                            "w-11 h-11 sm:w-13 sm:h-13 md:w-15 md:h-15 border-2 relative flex items-center justify-center cursor-pointer transition-all",
-                            cell.isBlack && "bg-gray-900 border-gray-800",
-                            !cell.isBlack && "bg-white/10 border-white/40 hover:bg-white/20",
-                            selectedCell?.row === rowIndex &&
-                              selectedCell?.col === colIndex &&
-                              "bg-christmas-gold/50 ring-4 ring-christmas-gold"
-                          )}
-                        >
-                          {cell.number && (
-                            <div className="absolute top-0 left-0 bg-white rounded-br px-1.5 py-0.5 leading-none">
-                              <span className="text-[11px] font-black text-red-600">
-                                {cell.number}
+              {/* Grid wrapper - scrollable */}
+              <div className="overflow-x-auto overflow-y-auto max-h-[500px]">
+                <div className="inline-block min-w-full flex justify-center">
+                  <div>
+                    {grid.map((row, rowIndex) => (
+                      <div key={rowIndex} className="flex">
+                        {row.map((cell, colIndex) => (
+                          <div
+                            key={`${rowIndex}-${colIndex}`}
+                            onClick={() => handleCellClick(rowIndex, colIndex)}
+                            className={cn(
+                              "w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 border-2 relative flex items-center justify-center cursor-pointer transition-all",
+                              cell.isBlack && "bg-gray-900 border-gray-800",
+                              !cell.isBlack && "bg-white/10 border-white/40 hover:bg-white/20 active:bg-white/30",
+                              selectedCell?.row === rowIndex &&
+                                selectedCell?.col === colIndex &&
+                                "bg-christmas-gold/50 ring-4 ring-christmas-gold border-christmas-gold"
+                            )}
+                          >
+                            {cell.number && <CellNumber number={cell.number} />}
+                            {cell.userLetter && (
+                              <span className="text-white text-base sm:text-lg md:text-xl font-bold z-10">
+                                {cell.userLetter}
                               </span>
-                            </div>
-                          )}
-                          {cell.userLetter && (
-                            <span className="text-white text-xl md:text-2xl font-bold">
-                              {cell.userLetter}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
+              {/* Action buttons */}
               <div className="mt-4 flex gap-3 justify-center flex-wrap">
                 <Button
                   onClick={handleCheck}
@@ -362,6 +398,7 @@ const Crossword = () => {
               </div>
             </div>
 
+            {/* Clues */}
             <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[500px] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">Підказки</h2>
 
@@ -374,11 +411,22 @@ const Crossword = () => {
                     {clues
                       .filter((c) => c.direction === "across")
                       .map((clue) => (
-                        <div key={clue.id} className="text-sm">
-                          <span className="inline-block w-6 h-6 text-center bg-white rounded font-black text-red-600 text-xs leading-6 mr-2">
+                        <div key={clue.id} className="text-sm flex items-start gap-2">
+                          <span 
+                            className="inline-block flex-shrink-0 text-center font-black leading-tight"
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              color: '#DC143C',
+                              fontSize: '12px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              minWidth: '20px',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}
+                          >
                             {clue.number}
                           </span>
-                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length})</span>
+                          <span>{clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span></span>
                         </div>
                       ))}
                   </div>
@@ -392,11 +440,22 @@ const Crossword = () => {
                     {clues
                       .filter((c) => c.direction === "down")
                       .map((clue) => (
-                        <div key={clue.id} className="text-sm">
-                          <span className="inline-block w-6 h-6 text-center bg-white rounded font-black text-red-600 text-xs leading-6 mr-2">
+                        <div key={clue.id} className="text-sm flex items-start gap-2">
+                          <span 
+                            className="inline-block flex-shrink-0 text-center font-black leading-tight"
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              color: '#DC143C',
+                              fontSize: '12px',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              minWidth: '20px',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}
+                          >
                             {clue.number}
                           </span>
-                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length})</span>
+                          <span>{clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span></span>
                         </div>
                       ))}
                   </div>
@@ -405,7 +464,7 @@ const Crossword = () => {
 
               <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
                 <p className="text-xs">
-                  💡 Натисніть на клітинку → системна клавіатура з'явиться автоматично
+                  💡 Натисніть на клітинку → з'явиться системна клавіатура
                 </p>
               </div>
             </div>
