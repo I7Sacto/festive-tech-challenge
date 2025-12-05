@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Trophy, RefreshCw, Check, X } from "lucide-react";
@@ -7,7 +8,7 @@ import Snowflakes from "@/components/Snowflakes";
 import Garland from "@/components/Garland";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+
 
 const Coding = () => {
   const navigate = useNavigate();
