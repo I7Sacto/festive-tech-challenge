@@ -26,16 +26,21 @@ interface Clue {
   startCol: number;
 }
 
-// Простий кросворд 6x6 з короткими словами
+// Сітка 8x8 з правильним розміщенням слів
 const clues: Clue[] = [
-  { id: 1, number: 1, clue: "Система версій", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
-  { id: 2, number: 2, clue: "Веб протокол", answer: "HTTP", direction: "across", startRow: 0, startCol: 3 },
-  { id: 3, number: 3, clue: "Запит до БД", answer: "SQL", direction: "down", startRow: 1, startCol: 0 },
-  { id: 4, number: 4, clue: "Файловий протокол", answer: "FTP", direction: "across", startRow: 2, startCol: 0 },
-  { id: 5, number: 5, clue: "Інтерфейс API", answer: "REST", direction: "down", startRow: 0, startCol: 3 },
-  { id: 6, number: 6, clue: "Доменні імена", answer: "DNS", direction: "across", startRow: 4, startCol: 0 },
-  { id: 7, number: 7, clue: "Безпечний Shell", answer: "SSH", direction: "down", startRow: 2, startCol: 2 },
-  { id: 8, number: 8, clue: "Continuous Int", answer: "CI", direction: "across", startRow: 5, startCol: 3 },
+  // По горизонталі
+  { id: 1, number: 1, clue: "Система контролю версій", answer: "GIT", direction: "across", startRow: 0, startCol: 0 },
+  { id: 2, number: 2, clue: "Протокол веб-серверів", answer: "HTTP", direction: "across", startRow: 2, startCol: 0 },
+  { id: 3, number: 3, clue: "Мова запитів до БД", answer: "SQL", direction: "across", startRow: 4, startCol: 0 },
+  { id: 4, number: 4, clue: "Файловий протокол", answer: "FTP", direction: "across", startRow: 6, startCol: 0 },
+  { id: 5, number: 5, clue: "Програмний інтерфейс", answer: "API", direction: "across", startRow: 0, startCol: 5 },
+  
+  // По вертикалі
+  { id: 6, number: 6, clue: "Доменні імена", answer: "DNS", direction: "down", startRow: 1, startCol: 1 },
+  { id: 7, number: 7, clue: "Безпечний Shell", answer: "SSH", direction: "down", startRow: 1, startCol: 3 },
+  { id: 8, number: 8, clue: "JavaScript Object", answer: "JSON", direction: "down", startRow: 0, startCol: 6 },
+  { id: 9, number: 9, clue: "Continuous Integration", answer: "CI", direction: "down", startRow: 3, startCol: 4 },
+  { id: 10, number: 10, clue: "Local Area Network", answer: "LAN", direction: "down", startRow: 5, startCol: 2 },
 ];
 
 const Crossword = () => {
@@ -58,7 +63,7 @@ const Crossword = () => {
   }, [selectedCell]);
 
   const initializeGrid = () => {
-    const gridSize = 6;
+    const gridSize = 8;
     const newGrid: CrosswordCell[][] = Array(gridSize)
       .fill(null)
       .map(() =>
@@ -102,7 +107,6 @@ const Crossword = () => {
     const value = e.target.value.toUpperCase();
     
     if (value.length > inputValue.length && selectedCell) {
-      // Користувач ввів нову літеру
       const newLetter = value.slice(-1);
       if (/[A-ZА-ЯІЇЄ]/.test(newLetter)) {
         const newGrid = grid.map(row => row.map(cell => ({...cell})));
@@ -110,14 +114,12 @@ const Crossword = () => {
         setGrid(newGrid);
         setInputValue(newLetter);
         
-        // Автоматично перейти до наступної клітинки
         setTimeout(() => {
           moveToNextCell();
           setInputValue("");
         }, 50);
       }
     } else if (value.length === 0 && selectedCell) {
-      // Користувач натиснув Backspace
       const newGrid = grid.map(row => row.map(cell => ({...cell})));
       newGrid[selectedCell.row][selectedCell.col].userLetter = "";
       setGrid(newGrid);
@@ -275,7 +277,6 @@ const Crossword = () => {
       <Garland />
       <Header />
 
-      {/* Прихований input для системної клавіатури (БЕЗ віртуальної) */}
       <input
         ref={inputRef}
         type="text"
@@ -294,30 +295,26 @@ const Crossword = () => {
             <h1 className="text-3xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent">
               📝 Технічний кросворд
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground">
+            <p className="text-sm md:text-base text-muted-foreground mb-2">
               Заповніть мінімум 80%
             </p>
             {selectedCell && (
-              <p className="text-sm text-christmas-gold mt-2">
-                Обрано: рядок {selectedCell.row + 1}, колонка {selectedCell.col + 1}
+              <p className="text-sm text-christmas-gold">
+                📍 Обрано клітинку
               </p>
             )}
           </div>
 
           <div className="grid lg:grid-cols-[1fr,350px] gap-4 lg:gap-6">
-            {/* Crossword Grid - centered and scrollable if needed */}
             <div className="glass-card p-3 md:p-6 rounded-3xl">
-              <div className="mb-3 flex gap-2 justify-between items-center">
-                <div className="text-xs md:text-sm text-muted-foreground">
-                  Натисніть на клітинку
-                </div>
+              <div className="mb-3 flex gap-2 justify-end">
                 <Button size="sm" variant="outline" onClick={handleShowHint}>
-                  <HelpCircle className="h-4 w-4" />
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Підказка
                 </Button>
               </div>
 
-              {/* Grid wrapper */}
-              <div className="flex justify-center overflow-x-auto">
+              <div className="flex justify-center overflow-x-auto pb-2">
                 <div className="inline-block">
                   {grid.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex">
@@ -326,30 +323,23 @@ const Crossword = () => {
                           key={`${rowIndex}-${colIndex}`}
                           onClick={() => handleCellClick(rowIndex, colIndex)}
                           className={cn(
-                            "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 relative flex items-center justify-center cursor-pointer transition-all",
-                            cell.isBlack && "bg-gray-900 border-gray-700",
+                            "w-11 h-11 sm:w-13 sm:h-13 md:w-15 md:h-15 border-2 relative flex items-center justify-center cursor-pointer transition-all",
+                            cell.isBlack && "bg-gray-900 border-gray-800",
                             !cell.isBlack && "bg-white/10 border-white/40 hover:bg-white/20",
                             selectedCell?.row === rowIndex &&
                               selectedCell?.col === colIndex &&
-                              "bg-christmas-gold/50 ring-4 ring-christmas-gold border-christmas-gold"
+                              "bg-christmas-gold/50 ring-4 ring-christmas-gold"
                           )}
                         >
                           {cell.number && (
-                            <span 
-                              className="absolute top-0.5 left-1 font-black z-20 pointer-events-none"
-                              style={{
-                                color: "#FFD700",
-                                textShadow: "0 0 4px #000, 0 0 6px #000, 1px 1px 3px #000, -1px -1px 3px #000",
-                                fontSize: "13px",
-                                lineHeight: "1"
-                              }}
-                            >
-                              {cell.number}
-                            </span>
+                            <div className="absolute top-0 left-0 bg-white rounded-br px-1.5 py-0.5 leading-none">
+                              <span className="text-[11px] font-black text-red-600">
+                                {cell.number}
+                              </span>
+                            </div>
                           )}
-                         
                           {cell.userLetter && (
-                            <span className="text-white text-xl sm:text-2xl md:text-3xl font-bold z-10">
+                            <span className="text-white text-xl md:text-2xl font-bold">
                               {cell.userLetter}
                             </span>
                           )}
@@ -360,7 +350,6 @@ const Crossword = () => {
                 </div>
               </div>
 
-              {/* Action buttons */}
               <div className="mt-4 flex gap-3 justify-center flex-wrap">
                 <Button
                   onClick={handleCheck}
@@ -377,7 +366,6 @@ const Crossword = () => {
               </div>
             </div>
 
-            {/* Clues */}
             <div className="glass-card p-4 md:p-6 rounded-3xl max-h-[500px] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">Підказки</h2>
 
@@ -391,8 +379,10 @@ const Crossword = () => {
                       .filter((c) => c.direction === "across")
                       .map((clue) => (
                         <div key={clue.id} className="text-sm">
-                          <span className="font-bold text-christmas-gold text-base">{clue.number}.</span>{" "}
-                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span>
+                          <span className="inline-block w-6 h-6 text-center bg-white rounded font-black text-red-600 text-xs leading-6 mr-2">
+                            {clue.number}
+                          </span>
+                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length})</span>
                         </div>
                       ))}
                   </div>
@@ -407,8 +397,10 @@ const Crossword = () => {
                       .filter((c) => c.direction === "down")
                       .map((clue) => (
                         <div key={clue.id} className="text-sm">
-                          <span className="font-bold text-christmas-gold text-base">{clue.number}.</span>{" "}
-                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length} літ.)</span>
+                          <span className="inline-block w-6 h-6 text-center bg-white rounded font-black text-red-600 text-xs leading-6 mr-2">
+                            {clue.number}
+                          </span>
+                          {clue.clue} <span className="text-xs text-muted-foreground">({clue.answer.length})</span>
                         </div>
                       ))}
                   </div>
@@ -417,7 +409,7 @@ const Crossword = () => {
 
               <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
                 <p className="text-xs">
-                  💡 Натисніть на клітинку → з'явиться системна клавіатура
+                  💡 Натисніть на клітинку → системна клавіатура з'явиться автоматично
                 </p>
               </div>
             </div>
