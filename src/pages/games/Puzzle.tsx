@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, RefreshCw, Shuffle } from "lucide-react";
@@ -8,6 +7,7 @@ import Garland from "@/components/Garland";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 interface PuzzlePiece {
   id: number;
@@ -22,7 +22,7 @@ const Puzzle = () => {
   const [showResults, setShowResults] = useState(false);
   const [moves, setMoves] = useState(0);
 
-  const gridSize = 4; // 4x4 = 16 pieces
+  const gridSize = 4;
 
   useEffect(() => {
     initializePuzzle();
@@ -35,7 +35,6 @@ const Puzzle = () => {
       correctPosition: i,
     }));
 
-    // Shuffle pieces
     const shuffled = [...newPieces];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -53,7 +52,6 @@ const Puzzle = () => {
     if (selectedPiece === null) {
       setSelectedPiece(pieceId);
     } else {
-      // Swap pieces
       const newPieces = [...pieces];
       const piece1 = newPieces.find((p) => p.id === selectedPiece)!;
       const piece2 = newPieces.find((p) => p.id === pieceId)!;
@@ -66,52 +64,50 @@ const Puzzle = () => {
       setSelectedPiece(null);
       setMoves(moves + 1);
 
-      // Check if puzzle is complete
       checkCompletion(newPieces);
     }
   };
 
   const checkCompletion = async (currentPieces: PuzzlePiece[]) => {
-  const isComplete = currentPieces.every((p) => p.currentPosition === p.correctPosition);
+    const isComplete = currentPieces.every((p) => p.currentPosition === p.correctPosition);
 
-  if (isComplete) {
-    setShowResults(true);
+    if (isComplete) {
+      setShowResults(true);
 
-    // Зберегти в Supabase
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        await supabase
-          .from('game_progress')
-          .update({
-            completed: true,
-            score: 100,
-            completed_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-          .eq('game_number', 3);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          await supabase
+            .from("game_progress")
+            .update({
+              completed: true,
+              score: 100,
+              completed_at: new Date().toISOString()
+            })
+            .eq("user_id", user.id)
+            .eq("game_number", 3);
 
-        // Розблокувати Гру 4
-        await supabase
-          .from('game_progress')
-          .update({ unlocked: true })
-          .eq('user_id', user.id)
-          .eq('game_number', 4);
+          await supabase
+            .from("game_progress")
+            .update({ unlocked: true })
+            .eq("user_id", user.id)
+            .eq("game_number", 4);
 
-        toast({
-          title: "🎉 Вітаємо!",
-          description: `Пазл зібрано за ${moves + 1} ходів! Coding Challenge розблоковано!`,
-        });
+          toast({
+            title: "🎉 Вітаємо!",
+            description: `Пазл зібрано за ${moves + 1} ходів! Coding Challenge розблоковано!`,
+          });
+        }
+      } catch (error) {
+        console.error("Error saving progress:", error);
       }
-    } catch (error) {
-      console.error('Error saving progress:', error);
     }
-  }
-};
+  };
 
   const getPieceAtPosition = (position: number) => {
     return pieces.find((p) => p.currentPosition === position);
+  };
 
   if (showResults) {
     return (
@@ -124,15 +120,11 @@ const Puzzle = () => {
           <div className="container mx-auto max-w-4xl">
             <div className="glass-card p-8 rounded-3xl text-center">
               <Trophy className="w-24 h-24 mx-auto mb-6 text-christmas-gold" />
-
               <h1 className="text-4xl font-bold mb-4">Пазл зібрано! 🎉</h1>
-
               <div className="text-6xl font-bold mb-6 bg-gradient-to-r from-christmas-red to-christmas-gold bg-clip-text text-transparent">
                 {moves} ходів
               </div>
-
               <p className="text-lg text-green-500 mb-8">✅ Coding Challenge розблоковано!</p>
-
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button
                   onClick={initializePuzzle}
@@ -166,13 +158,13 @@ const Puzzle = () => {
               🧩 DevOps Пазл
             </h1>
             <p className="text-muted-foreground mb-4">
-              Зберіть різдвяну DevOps інфографіку. Натискайте на дві плитки для обміну місцями.
+              Зберіть різдвяну DevOps інфографіку
             </p>
             <div className="text-2xl font-bold text-christmas-gold">Ходів: {moves}</div>
           </div>
 
-          <div className="glass-card p-8 rounded-3xl mb-6">
-            <div className="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
+          <div className="glass-card p-4 md:p-8 rounded-3xl mb-6">
+            <div className="grid grid-cols-4 gap-1 md:gap-2 max-w-2xl mx-auto">
               {Array.from({ length: gridSize * gridSize }).map((_, position) => {
                 const piece = getPieceAtPosition(position);
                 if (!piece) return null;
@@ -185,10 +177,10 @@ const Puzzle = () => {
                     key={position}
                     onClick={() => handlePieceClick(piece.id)}
                     className={cn(
-                      "aspect-square rounded-xl cursor-pointer transition-all border-4 flex items-center justify-center text-6xl",
-                      isSelected && "ring-4 ring-christmas-gold scale-95",
+                      "aspect-square rounded-lg md:rounded-xl cursor-pointer transition-all border-2 md:border-4 flex items-center justify-center text-4xl md:text-6xl",
+                      isSelected && "ring-2 md:ring-4 ring-christmas-gold scale-95",
                       isCorrect ? "border-green-500" : "border-white/20",
-                      "hover:scale-105 hover:border-christmas-gold"
+                      "hover:scale-105 hover:border-christmas-gold active:scale-95"
                     )}
                     style={{
                       background: `linear-gradient(135deg, 
@@ -196,7 +188,6 @@ const Puzzle = () => {
                         ${piece.id % 3 === 0 ? "#8B1429" : piece.id % 3 === 1 ? "#DAA520" : "#0A5C3F"} 100%)`,
                     }}
                   >
-                    {/* DevOps icons */}
                     {piece.id === 0 && "🐳"}
                     {piece.id === 1 && "☸️"}
                     {piece.id === 2 && "🔧"}
@@ -219,8 +210,8 @@ const Puzzle = () => {
             </div>
 
             {selectedPiece !== null && (
-              <div className="text-center mt-6 text-christmas-gold">
-                Плитка вибрана! Натисніть на іншу для обміну.
+              <div className="text-center mt-6 text-christmas-gold text-sm md:text-base">
+                Плитка вибрана! Натисніть на іншу.
               </div>
             )}
           </div>
