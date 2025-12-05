@@ -90,35 +90,113 @@ const Surprise = () => {
     }
   };
 
-  const handleDownloadCertificate = () => {
+ const handleDownloadCertificate = async () => {
+  try {
+    // Створюємо HTML для PDF
+    const certificateHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial; text-align: center; padding: 40px; background: linear-gradient(135deg, #C41E3A, #FFD700); }
+          .cert { background: white; padding: 60px; border: 10px double #FFD700; border-radius: 20px; max-width: 800px; margin: 0 auto; }
+          h1 { color: #C41E3A; font-size: 48px; margin-bottom: 20px; }
+          .name { color: #FFD700; font-size: 36px; font-weight: bold; margin: 30px 0; }
+          .date { color: #666; font-size: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="cert">
+          <div style="font-size: 72px;">🏆</div>
+          <h1>Сертифікат Досягнення</h1>
+          <p style="font-size: 24px;">Цей сертифікат підтверджує, що</p>
+          <div class="name">ІТ-професіонал</div>
+          <p style="font-size: 24px;">успішно пройшов</p>
+          <div style="background: linear-gradient(to right, rgba(196,30,58,0.2), rgba(255,215,0,0.2)); padding: 30px; border-radius: 15px; margin: 30px 0;">
+            <p style="font-size: 32px; font-weight: bold; margin: 10px 0;">🎄 Різдвяний ІТ Challenge 🎄</p>
+            <p style="font-size: 20px;">Всі 6 різдвяних ігор</p>
+          </div>
+          <div class="date">Дата: ${new Date().toLocaleDateString("uk-UA", { day: "numeric", month: "long", year: "numeric" })}</div>
+          <p style="margin-top: 40px; color: #999; font-size: 14px; font-style: italic;">"Знання - це найкращий різдвяний подарунок!"</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Створюємо Blob з HTML
+    const blob = new Blob([certificateHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Завантажуємо як HTML (можна відкрити і зберегти як PDF через браузер)
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Різдвяний_Сертифікат_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     toast({
-      title: "📥 Завантаження...",
-      description: "Сертифікат буде завантажено",
+      title: "📥 Завантажено!",
+      description: "Відкрийте файл і збережіть як PDF через браузер (Ctrl+P → Save as PDF)",
     });
-  };
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "❌ Помилка",
+      description: "Не вдалося завантажити сертифікат",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleShare = () => {
-    const shareText = "Я пройшов всі 6 різдвяних ІТ-ігор! 🎄🎮✨";
-    
-    if (navigator.share) {
-      navigator.share({
-        title: "Різдвяний ІТ Challenge",
-        text: shareText,
-      }).catch(() => {
-        navigator.clipboard.writeText(shareText);
-        toast({
-          title: "📋 Скопійовано!",
-          description: "Текст скопійовано",
-        });
-      });
-    } else {
-      navigator.clipboard.writeText(shareText);
-      toast({
-        title: "📋 Скопійовано!",
-        description: "Текст скопійовано",
-      });
-    }
+  const shareText = "Я пройшов всі 6 різдвяних ІТ-ігор! 🎄🎮✨";
+  const shareUrl = window.location.origin;
+  
+  // Створюємо меню з соцмережами
+  const shareMenu = document.createElement('div');
+  shareMenu.innerHTML = `
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 20px; border: 2px solid #FFD700;">
+      <h3 style="color: #FFD700; margin-bottom: 20px; text-align: center; font-size: 20px;">Поділитися:</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; min-width: 250px;">
+        <a href="viber://forward?text=${encodeURIComponent(shareText + ' ' + shareUrl)}" style="background: #7360F2; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; text-align: center; font-weight: bold;">
+          💜 Viber
+        </a>
+        <a href="https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}" target="_blank" style="background: #0088CC; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; text-align: center; font-weight: bold;">
+          ✈️ Telegram
+        </a>
+        <a href="https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}" target="_blank" style="background: #25D366; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; text-align: center; font-weight: bold;">
+          💬 WhatsApp
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" style="background: #1877F2; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; text-align: center; font-weight: bold;">
+          📘 Facebook
+        </a>
+        <button onclick="navigator.clipboard.writeText('${shareText} ${shareUrl}'); alert('Скопійовано!');" style="background: #888; color: white; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold;">
+          📋 Копіювати посилання
+        </button>
+        <button id="closeShareMenu" style="background: #DC143C; color: white; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold;">
+          ❌ Закрити
+        </button>
+      </div>
+    </div>
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9998;" id="shareOverlay"></div>
+  `;
+  
+  document.body.appendChild(shareMenu);
+  
+  // Закриття меню
+  const closeBtn = document.getElementById('closeShareMenu');
+  const overlay = document.getElementById('shareOverlay');
+  
+  const closeMenu = () => {
+    document.body.removeChild(shareMenu);
   };
+  
+  if (closeBtn) closeBtn.onclick = closeMenu;
+  if (overlay) overlay.onclick = closeMenu;
+};
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
