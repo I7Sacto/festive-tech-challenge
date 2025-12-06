@@ -90,12 +90,43 @@ const Gifts = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
-    toast({
-      title: "📥 Завантаження почалось...",
-      description: "PDF-листівка буде готова за мить!",
-    });
-  };
+  const handleDownloadGift = (giftType: string, filename: string) => {
+  // Створюємо SVG святкової листівки
+  const svgContent = `
+    <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#C41E3A;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#0F8A5F;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="600" fill="url(#grad1)"/>
+      <rect x="40" y="40" width="720" height="520" fill="white" stroke="#FFD700" stroke-width="8" rx="20"/>
+      <text x="400" y="120" text-anchor="middle" font-size="48" font-weight="bold" fill="#C41E3A">🎄 З Різдвом! 🎄</text>
+      <text x="400" y="200" text-anchor="middle" font-size="32" fill="#333">${giftType}</text>
+      <text x="400" y="350" text-anchor="middle" font-size="24" fill="#666">if (christmas) {</text>
+      <text x="400" y="385" text-anchor="middle" font-size="24" fill="#666">  return { joy: true, bugs: false };</text>
+      <text x="400" y="420" text-anchor="middle" font-size="24" fill="#666">}</text>
+      <text x="400" y="520" text-anchor="middle" font-size="18" fill="#999" font-style="italic">Різдвяний ІТ Challenge 2024</text>
+    </svg>
+  `;
+
+  const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  toast({
+    title: "📥 Завантажено!",
+    description: `Файл ${filename} збережено`,
+  });
+};
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
