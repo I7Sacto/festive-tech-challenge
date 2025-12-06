@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Share2, Copy, Check, Sparkles } from "lucide-react";
+import { Download, Share2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,50 +10,11 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const cardTemplates = [
-  {
-    id: 1,
-    title: "Класичне IT-привітання",
-    emoji: "🎄",
-    preview: "if (christmas) return { joy: true, bugs: false };",
-    bgClass: "bg-gradient-christmas",
-  },
-  {
-    id: 2,
-    title: "DevOps стиль",
-    emoji: "🐳",
-    preview: "kubectl apply -f christmas-joy.yaml",
-    bgClass: "bg-gradient-to-br from-blue-600 to-cyan-500",
-  },
-  {
-    id: 3,
-    title: "Frontend Magic",
-    emoji: "⚛️",
-    preview: "<ChristmasTree sparkle={true} />",
-    bgClass: "bg-gradient-to-br from-purple-600 to-pink-500",
-  },
-  {
-    id: 4,
-    title: "Backend Wisdom",
-    emoji: "🔧",
-    preview: "SELECT * FROM wishes WHERE year = 2024;",
-    bgClass: "bg-gradient-to-br from-green-600 to-emerald-500",
-  },
-  {
-    id: 5,
-    title: "Сисадмін Special",
-    emoji: "🖥️",
-    preview: "uptime: 365 days of happiness",
-    bgClass: "bg-gradient-to-br from-orange-600 to-amber-500",
-  },
-];
-
-const techMemes = [
-  { id: 1, emoji: "🎅", text: "git commit -m 'Ho ho ho!'" },
-  { id: 2, emoji: "🎁", text: "npm install christmas-spirit" },
-  { id: 3, emoji: "❄️", text: "docker run -d santa/sleigh:latest" },
-  { id: 4, emoji: "🔔", text: "SELECT joy FROM holidays WHERE name='Christmas'" },
-  { id: 5, emoji: "⭐", text: "while(christmas) { celebrate(); }" },
-  { id: 6, emoji: "🎄", text: "sudo make christmas-cake" },
+  { id: 1, title: "IT-привітання", emoji: "🎄", preview: "if (christmas) return { joy: true };" },
+  { id: 2, title: "DevOps", emoji: "🐳", preview: "kubectl apply -f joy.yaml" },
+  { id: 3, title: "Frontend", emoji: "⚛️", preview: "<ChristmasTree />" },
+  { id: 4, title: "Backend", emoji: "🔧", preview: "SELECT * FROM wishes;" },
+  { id: 5, title: "Сисадмін", emoji: "🖥️", preview: "uptime: ∞ happiness" },
 ];
 
 const Gifts = () => {
@@ -62,19 +23,22 @@ const Gifts = () => {
   const [customMessage, setCustomMessage] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const handleShare = async () => {
-    const shareUrl = window.location.href;
+  const handleDownload = () => {
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Подарунок</title><style>body{margin:0;padding:20px;background:linear-gradient(135deg,#C41E3A,#FFD700,#0F8A5F);font-family:Arial}.card{background:white;padding:40px;border-radius:20px;max-width:600px;margin:0 auto;text-align:center}h1{color:#C41E3A;font-size:36px;margin:10px 0}.emoji{font-size:80px;margin:10px 0}</style></head><body><div class="card"><div class="emoji">${selectedCard.emoji}</div><h1>🎄 ${selectedCard.title} 🎄</h1><p style="color:#666;font-size:18px">Для: ${recipientName || "Колеги"}</p><p style="color:#666;font-size:16px;margin:20px 0">${customMessage || selectedCard.preview}</p></div></body></html>`;
     
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Podaru nok.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "📥 Завантажено!" });
+  };
+
+  const handleShare = () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Різдвяне привітання від IT-фахівця",
-          text: `${selectedCard.preview} - З Різдвом! 🎄`,
-          url: shareUrl,
-        });
-      } catch (err) {
-        // User cancelled or error
-      }
+      navigator.share({ title: "Різдво", text: selectedCard.preview });
     } else {
       handleCopyLink();
     }
@@ -83,196 +47,71 @@ const Gifts = () => {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
-    toast({
-      title: "✅ Посилання скопійовано!",
-      description: "Тепер ви можете поділитися ним з друзями.",
-    });
+    toast({ title: "✅ Скопійовано!" });
     setTimeout(() => setCopied(false), 2000);
   };
 
-const handleDownload = () => {
-  const giftTitle = selectedCard.title;
-  const giftEmoji = selectedCard.emoji;
-  
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>${giftTitle}</title>
-  <style>
-    body { margin: 0; padding: 40px; background: linear-gradient(135deg, #C41E3A, #FFD700, #0F8A5F); font-family: Arial; }
-    .card { background: white; padding: 60px; border-radius: 30px; max-width: 600px; margin: 0 auto; text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div style="font-size:120px">${giftEmoji}</div>
-    <h1 style="color:#C41E3A;font-size:48px">🎄 ${giftTitle} 🎄</h1>
-    <p style="color:#666;font-size:20px">Для: ${recipientName || "Колеги"}</p>
-    <p style="color:#666;font-size:18px;margin:20px 0">${customMessage || selectedCard.preview}</p>
-  </div>
-</body>
-</html>`;
-
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = giftTitle.replace(/ /g, '_') + '.html';
-  link.click();
-  URL.revokeObjectURL(url);
-
-  toast({ title: "📥 Завантажено!", description: "Ctrl+P → Save as PDF" });
-};
-
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      <Snowflakes />
-      <Garland />
-      <Header />
+      <Snowflakes /><Garland /><Header />
 
-      <main className="pt-36 pb-16 px-4 relative z-10">
-        <div className="container mx-auto max-w-5xl">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="font-heading font-bold text-4xl md:text-5xl mb-4">
-              <span className="text-gradient-gold">🎁 Подарунки</span>
+      <main className="pt-28 sm:pt-36 pb-12 sm:pb-16 px-2 sm:px-4 relative z-10">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-6 sm:mb-10">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-christmas-red via-christmas-gold to-christmas-green bg-clip-text text-transparent">
+              🎁 Подарунки
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Створіть та завантажте різдвяні листівки для колег
-            </p>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground">Створіть листівку</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Card Creator */}
-            <div className="space-y-6">
-              <div className="glass-card rounded-2xl p-6">
-                <h3 className="font-heading font-bold text-xl mb-4 text-foreground">
-                  ✨ Створити листівку
-                </h3>
-                
-                {/* Card Templates */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
-                  {cardTemplates.map((card) => (
-                    <button
-                      key={card.id}
-                      onClick={() => setSelectedCard(card)}
-                      className={cn(
-                        "p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all duration-300",
-                        selectedCard.id === card.id
-                          ? "ring-2 ring-christmas-gold bg-secondary"
-                          : "bg-secondary/50 hover:bg-secondary"
-                      )}
-                    >
-                      <span className="text-xl sm:text-2xl mb-1 sm:mb-2 block">{card.emoji}</span>
-                      <p className="text-sm font-medium text-foreground">
-                        {card.title}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Customization */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Ім'я отримувача
-                    </label>
-                    <Input
-                      placeholder="Введіть ім'я..."
-                      value={recipientName}
-                      onChange={(e) => setRecipientName(e.target.value)}
-                      className="bg-secondary border-border"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">
-                      Персональне привітання
-                    </label>
-                    <Textarea
-                      placeholder="Напишіть ваше побажання..."
-                      value={customMessage}
-                      onChange={(e) => setCustomMessage(e.target.value)}
-                      className="bg-secondary border-border resize-none h-24"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <Button variant="gold" className="flex-1" onClick={handleDownload}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Завантажити PDF
-                </Button>
-                <Button variant="silver" onClick={handleShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Поділитися
-                </Button>
-                <Button variant="outline" onClick={handleCopyLink}>
-                  {copied ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
+          <div className="glass-card rounded-2xl p-3 sm:p-6 mb-4">
+            <h3 className="font-bold text-base sm:text-xl mb-3 sm:mb-4">✨ Оберіть шаблон</h3>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
+              {cardTemplates.map((card) => (
+                <button
+                  key={card.id}
+                  onClick={() => setSelectedCard(card)}
+                  className={cn(
+                    "p-2 sm:p-3 rounded-lg text-center transition-all",
+                    selectedCard.id === card.id
+                      ? "ring-2 ring-christmas-gold bg-white/10"
+                      : "bg-white/5 hover:bg-white/10"
                   )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Preview */}
-            <div>
-              <div className={cn(
-                "rounded-2xl p-8 min-h-[400px] flex flex-col items-center justify-center text-center transition-all duration-500",
-                selectedCard.bgClass
-              )}>
-                <span className="text-6xl mb-4 animate-float">{selectedCard.emoji}</span>
-                <h3 className="font-heading font-bold text-2xl text-white mb-2">
-                  {recipientName ? `Для ${recipientName}` : "З Різдвом Христовим!"}
-                </h3>
-                <p className="text-white/90 font-mono text-lg mb-4">
-                  {selectedCard.preview}
-                </p>
-                {customMessage && (
-                  <p className="text-white/80 text-sm max-w-xs">
-                    {customMessage}
-                  </p>
-                )}
-                <div className="mt-6 flex items-center gap-2 text-white/60 text-sm">
-                  <Sparkles className="w-4 h-4" />
-                  IT Christmas 2024
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tech Memes Section */}
-          <div className="mt-16">
-            <h2 className="font-heading font-bold text-2xl text-center mb-8">
-              <span className="text-gradient-gold">💻 Tech-меми</span>
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {techMemes.map((meme) => (
-                <div
-                  key={meme.id}
-                  className="glass-card rounded-xl p-6 text-center hover:scale-105 transition-transform cursor-pointer"
-                  onClick={() => {
-                    navigator.clipboard.writeText(meme.text);
-                    toast({
-                      title: "📋 Скопійовано!",
-                      description: meme.text,
-                    });
-                  }}
                 >
-                  <span className="text-4xl mb-3 block">{meme.emoji}</span>
-                  <p className="font-mono text-sm text-christmas-gold">
-                    {meme.text}
-                  </p>
-                </div>
+                  <span className="text-3xl sm:text-4xl block mb-1">{card.emoji}</span>
+                  <p className="text-[10px] sm:text-xs font-medium">{card.title}</p>
+                </button>
               ))}
             </div>
-            <p className="text-center text-muted-foreground text-sm mt-4">
-              💡 Натисніть на мем, щоб скопіювати
-            </p>
+
+            <div className="space-y-3 sm:space-y-4">
+              <Input
+                placeholder="Ім'я отримувача..."
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                className="bg-white/5 border-white/20 text-sm sm:text-base h-9 sm:h-10"
+              />
+              <Textarea
+                placeholder="Ваше побажання..."
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                className="bg-white/5 border-white/20 resize-none h-20 sm:h-24 text-sm sm:text-base"
+              />
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              <Button onClick={handleDownload} className="flex-1 bg-gradient-to-r from-christmas-red to-christmas-gold text-sm sm:text-base h-9 sm:h-10">
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Завантажити
+              </Button>
+              <Button onClick={handleShare} variant="outline" className="text-sm sm:text-base h-9 sm:h-10">
+                <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+              <Button onClick={handleCopyLink} variant="outline" className="h-9 sm:h-10">
+                {copied ? <Check className="h-3 w-3 sm:h-4 sm:w-4" /> : <Copy className="h-3 w-3 sm:h-4 sm:w-4" />}
+              </Button>
+            </div>
           </div>
         </div>
       </main>
