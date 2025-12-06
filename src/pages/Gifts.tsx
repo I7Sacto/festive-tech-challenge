@@ -90,8 +90,10 @@ const Gifts = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
- const handleDownload = (giftTitle: string, giftEmoji: string) => {
-  // Створюємо HTML сертифікат
+const handleDownload = () => {
+  const giftTitle = selectedCard.title;
+  const giftEmoji = selectedCard.emoji;
+  
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -99,18 +101,15 @@ const Gifts = () => {
   <title>${giftTitle}</title>
   <style>
     body { margin: 0; padding: 40px; background: linear-gradient(135deg, #C41E3A, #FFD700, #0F8A5F); font-family: Arial; }
-    .card { background: white; padding: 60px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; margin: 0 auto; text-align: center; }
-    h1 { color: #C41E3A; font-size: 48px; margin: 20px 0; }
-    .emoji { font-size: 120px; margin: 20px 0; }
-    p { color: #666; font-size: 20px; line-height: 1.6; }
+    .card { background: white; padding: 60px; border-radius: 30px; max-width: 600px; margin: 0 auto; text-align: center; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="emoji">${giftEmoji}</div>
-    <h1>🎄 ${giftTitle} 🎄</h1>
-    <p>З Різдвом Христовим!</p>
-    <p style="font-style: italic; margin-top: 40px; font-size: 16px; color: #999;">Різдвяний ІТ Challenge 2024</p>
+    <div style="font-size:120px">${giftEmoji}</div>
+    <h1 style="color:#C41E3A;font-size:48px">🎄 ${giftTitle} 🎄</h1>
+    <p style="color:#666;font-size:20px">Для: ${recipientName || "Колеги"}</p>
+    <p style="color:#666;font-size:18px;margin:20px 0">${customMessage || selectedCard.preview}</p>
   </div>
 </body>
 </html>`;
@@ -119,16 +118,11 @@ const Gifts = () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${giftTitle.replace(/ /g, '_')}.html`;
-  document.body.appendChild(link);
+  link.download = giftTitle.replace(/ /g, '_') + '.html';
   link.click();
-  document.body.removeChild(link);
   URL.revokeObjectURL(url);
 
-  toast({
-    title: "📥 Завантажено!",
-    description: "Відкрийте файл → Ctrl+P → Save as PDF",
-  });
+  toast({ title: "📥 Завантажено!", description: "Ctrl+P → Save as PDF" });
 };
 
   return (
