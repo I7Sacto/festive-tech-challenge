@@ -8,6 +8,7 @@ import Garland from "@/components/Garland";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 const famousProgrammers = [
   {
@@ -92,12 +93,71 @@ const Gallery = () => {
     );
   };
 
-  const handleUpload = () => {
+const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // Перевірка розміру (макс 5MB)
+  if (file.size > 5 * 1024 * 1024) {
     toast({
-      title: "📸 Завантаження...",
-      description: "Для завантаження фото потрібна авторизація. Підключіть Supabase!",
+      title: "❌ Файл занадто великий",
+      description: "Максимум 5MB",
+      variant: "destructive",
     });
-  };
+    return;
+  }
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "⚠️ Потрібна авторизація",
+        description: "Увійдіть в акаунт",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Завантаження в Supabase Storage
+    const fileName = `${user.id}/${Date.now()}_${file.name}`;
+    
+    const { data, error } = await supabase.storage
+      .from('user-photos')
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    // Отримання публічного URL
+    const { data: urlData } = supabase.storage
+      .from('user-photos')
+      .getPublicUrl(fileName);
+
+    if (urlData) {
+      // Зберегти в базу
+      await supabase.from('user_photos').insert({
+        user_id: user.id,
+        photo_url: urlData.publicUrl,
+        caption: ''
+      });
+
+      toast({
+        title: "✅ Фото завантажено!",
+        description: "Ваше фото додано до галереї",
+      });
+
+      // Оновити список фото
+      fetchPhotos();
+    }
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "❌ Помилка завантаження",
+      description: "Спробуйте ще раз",
+      variant: "destructive",
+    });
+  }
+};
 
   const handlePublishWish = () => {
     if (!wishText.trim()) {
