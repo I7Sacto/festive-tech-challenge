@@ -152,19 +152,19 @@ const handleDownload = () => {
                 </h3>
                 
                 {/* Card Templates */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
                   {cardTemplates.map((card) => (
                     <button
                       key={card.id}
                       onClick={() => setSelectedCard(card)}
                       className={cn(
-                        "p-4 rounded-xl text-left transition-all duration-300",
+                        "p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all duration-300",
                         selectedCard.id === card.id
                           ? "ring-2 ring-christmas-gold bg-secondary"
                           : "bg-secondary/50 hover:bg-secondary"
                       )}
                     >
-                      <span className="text-2xl mb-2 block">{card.emoji}</span>
+                      <span className="text-xl sm:text-2xl mb-1 sm:mb-2 block">{card.emoji}</span>
                       <p className="text-sm font-medium text-foreground">
                         {card.title}
                       </p>
