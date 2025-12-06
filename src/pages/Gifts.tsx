@@ -90,12 +90,46 @@ const Gifts = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
-    toast({
-      title: "📥 Завантаження почалось...",
-      description: "PDF-листівка буде готова за мить!",
-    });
-  };
+ const handleDownload = (giftTitle: string, giftEmoji: string) => {
+  // Створюємо HTML сертифікат
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${giftTitle}</title>
+  <style>
+    body { margin: 0; padding: 40px; background: linear-gradient(135deg, #C41E3A, #FFD700, #0F8A5F); font-family: Arial; }
+    .card { background: white; padding: 60px; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; margin: 0 auto; text-align: center; }
+    h1 { color: #C41E3A; font-size: 48px; margin: 20px 0; }
+    .emoji { font-size: 120px; margin: 20px 0; }
+    p { color: #666; font-size: 20px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji">${giftEmoji}</div>
+    <h1>🎄 ${giftTitle} 🎄</h1>
+    <p>З Різдвом Христовим!</p>
+    <p style="font-style: italic; margin-top: 40px; font-size: 16px; color: #999;">Різдвяний ІТ Challenge 2024</p>
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${giftTitle.replace(/ /g, '_')}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  toast({
+    title: "📥 Завантажено!",
+    description: "Відкрийте файл → Ctrl+P → Save as PDF",
+  });
+};
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
